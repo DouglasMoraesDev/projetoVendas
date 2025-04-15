@@ -31,9 +31,21 @@ function parseBRL(v) {
   return isNaN(num) ? 0 : num;
 }
 
+// Requisições para a API
+async function apiRequest(url, method, data, isFormData = false) {
+  const options = {
+    method,
+    headers: isFormData ? {} : { 'Content-Type': 'application/json' },
+    body: isFormData ? data : JSON.stringify(data)
+  };
+  const res = await fetch(url, options);
+  if (!res.ok) throw new Error('Erro na requisição');
+  return await res.json();
+}
+
 async function fetchProdutos() {
   try {
-    return await window.apiRequest('produtos', 'GET');
+    return await apiRequest('/api/produtos', 'GET');
   } catch (error) {
     console.error(error);
     return [];
@@ -47,7 +59,7 @@ async function renderProdutos() {
   produtos.forEach(p => {
     const li = document.createElement('li');
     li.innerHTML = `
-      <img src="${p.foto || 'https://via.placeholder.com/50'}" class="produto">
+      <img src="${p.foto ? '/' + p.foto : 'https://via.placeholder.com/50'}" class="produto" style="width:50px;height:50px">
       <span>${p.nome}</span>
       <span>${formatter.format(p.preco)}</span>
       <span>Qtd: ${p.qtd}</span>
@@ -66,29 +78,29 @@ formProduto.addEventListener('submit', async (e) => {
   const qtd = parseInt(qtdInput.value, 10) || 0;
   const file = fotoInput.files[0];
 
-  const processData = async (fotoData) => {
-    try {
-      const payload = { nome, preco, qtd, foto: fotoData };
-      if (editProdutoId) {
-        await window.apiRequest(`produtos/${editProdutoId}`, 'PUT', payload);
-        editProdutoId = null;
-        btnSalvar.textContent = 'Cadastrar';
-      } else {
-        await window.apiRequest('produtos', 'POST', payload);
-      }
-      formProduto.reset();
-      renderProdutos();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
+  const formData = new FormData();
+  formData.append('nome', nome);
+  formData.append('preco', preco);
+  formData.append('qtd', qtd);
   if (file) {
-    const reader = new FileReader();
-    reader.onload = () => processData(reader.result);
-    reader.readAsDataURL(file);
-  } else {
-    await processData(null);
+    formData.append('image', file);
+  }
+
+  let url = '/api/produtos';
+  let method = 'POST';
+  if (editProdutoId) {
+    url = `/api/produtos/${editProdutoId}`;
+    method = 'PUT';
+  }
+
+  try {
+    await apiRequest(url, method, formData, true);
+    formProduto.reset();
+    editProdutoId = null;
+    btnSalvar.textContent = 'Cadastrar';
+    renderProdutos();
+  } catch (err) {
+    console.error(err);
   }
 });
 
@@ -105,7 +117,7 @@ window.editProduto = async (id) => {
 
 window.deleteProduto = async (id) => {
   try {
-    await window.apiRequest(`produtos/${id}`, 'DELETE');
+    await apiRequest(`/api/produtos/${id}`, 'DELETE');
     renderProdutos();
   } catch (err) {
     console.error(err);

@@ -4,7 +4,11 @@ const { comprovantes } = require('../models/comprovantes');
 const { eq } = require('drizzle-orm');
 
 const adicionarComprovante = async (db, req, res) => {
-  const { venda_id, imagem } = req.body;
+  // Se o middleware Multer estiver ativo, req.file conterá as informações do arquivo
+  const { venda_id } = req.body;
+  // Usa o caminho salvo pelo Multer, ou, se não houver upload, tenta usar o que vier no body
+  const imagem = req.file ? req.file.path : req.body.imagem;
+  
   try {
     const result = await db
       .insert(comprovantes)
