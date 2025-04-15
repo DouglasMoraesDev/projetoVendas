@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vendas</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Vendas</h1>
+    <button onclick="location.href='dashboard.html'">Voltar</button>
+  </header>
+
+  <main>
+    <form id="vendaForm">
+      <select id="clienteSelect" required></select>
+      <select id="produtoSelect" required></select>
+      <input type="number" id="quantidade" placeholder="Quantidade" required />
+      <button type="submit">Registrar Venda</button>
+    </form>
+
+    <ul id="listaVendas"></ul>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/vendas.js"></script>
+</body>
+</html>

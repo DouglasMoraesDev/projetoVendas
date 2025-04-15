@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Produtos</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Produtos</h1>
+    <button onclick="location.href='dashboard.html'">Voltar</button>
+  </header>
+
+  <main>
+    <form id="formProduto">
+      <input type="text" id="nomeProd" placeholder="Nome do produto" required />
+      <input type="text" id="precoProd" placeholder="Preço (R$)" required />
+      <input type="number" id="qtdProd" placeholder="Quantidade" required min="0" />
+      <input type="file" id="fotoProd" accept="image/*" />
+      <button id="btnSalvarProduto" type="submit">Cadastrar</button>
+    </form>
+
+    <ul id="listaProdutos"></ul>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/produtos.js"></script>
+</body>
+</html>
