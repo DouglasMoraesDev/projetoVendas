@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Controle de Parcelas</title>
+  <title>Comprovantes</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <header>
-    <h1>Comprovantes</h1>
+    <h1>Comprovantes e Parcelas Pendentes</h1>
     <button onclick="window.print()">Imprimir</button>
-    <button onclick="window.location.href='dashboard.html'">Voltar</button>
+    <button onclick="location.href='dashboard.html'">Voltar</button>
   </header>
 
   <main>
@@ -18,7 +18,7 @@
     <div id="listaParcelas" class="lista"></div>
   </main>
 
-  <script src="js/api.js"></script>
-  <script src="js/parcelas.js"></script>
+  <script type="module" src="js/api.js"></script>
+  <script type="module" src="js/parcelas.js"></script>
 </body>
 </html>

@@ -1,12 +1,15 @@
 // src/routes/comprovantesRoutes.js
+import express from 'express';
+import {
+  listarComprovantes,
+  adicionarComprovante
+} from '../controllers/comprovantesController.js';
+import { authenticate } from '../middlewares/authMiddleware.js';
 
-const express = require('express');
-const router = express.Router();
-const comprovantesController = require('../controllers/comprovantesController');
-
-// Rota GET opcional com parâmetro venda_id e POST para adicionar comprovante.
-module.exports = (db) => {
-  router.get('/:venda_id?', (req, res) => comprovantesController.listarComprovantes(db, req, res));
-  router.post('/', (req, res) => comprovantesController.adicionarComprovante(db, req, res));
+export default function(db) {
+  const router = express.Router();
+  router.use(authenticate);
+  router.get('/:venda_id?', (req, res) => listarComprovantes(db, req, res));
+  router.post('/', (req, res) => adicionarComprovante(db, req, res));
   return router;
-};
+}

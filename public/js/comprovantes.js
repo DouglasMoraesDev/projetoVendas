@@ -1,24 +1,31 @@
-// js/comprovantes.js
+// public/js/comprovantes.js
+import { request } from './api.js';
 
 async function renderComprovantes() {
   try {
-    // Pode ser ajustado para filtrar por venda: ex. 'comprovantes/1'
-    const comprovantesData = await window.apiRequest('comprovantes', 'GET');
-    const container = document.getElementById('listaComprovantes');
-    container.innerHTML = '';
-    
-    comprovantesData.forEach(c => {
-      const card = document.createElement('div');
-      card.className = 'card comprovante-card';
-      card.innerHTML = `
-        <p><strong>Venda ID:</strong> ${c.venda_id}</p>
-        <img src="${c.imagem}" alt="Comprovante" class="proof-img">
-      `;
-      container.appendChild(card);
-    });
-  } catch (error) {
-    console.error('Erro ao renderizar comprovantes:', error);
+    const params = new URLSearchParams(window.location.search);
+    const vendaId = params.get('venda_id');
+    if (!vendaId) {
+      throw new Error('ID de venda não informado.');
+    }
+    const comprovantes = await request(`comprovantes?venda_id=${vendaId}`);
+    const container = document.getElementById('comprovantes-container');
+    if (!container) {
+      throw new Error('Elemento #comprovantes-container não encontrado no DOM.');
+    }
+    container.innerHTML = comprovantes
+      .map(c => `
+        <div class="comprovante-item">
+          <a href="${c.url}" target="_blank">Visualizar comprovante</a>
+          <span>${new Date(c.created_at).toLocaleString()}</span>
+        </div>
+      `)
+      .join('');
+  } catch (err) {
+    console.error('Erro ao renderizar comprovantes:', err);
+    const container = document.getElementById('comprovantes-container');
+    if (container) container.innerHTML = `<p class="error">${err.message}</p>`;
   }
 }
 
-document.addEventListener('DOMContentLoaded', renderComprovantes);
+window.addEventListener('DOMContentLoaded', renderComprovantes);

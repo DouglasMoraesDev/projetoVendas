@@ -1,48 +1,19 @@
-// js/parcelas.js
+// public/js/parcelas.js
+import { apiRequest } from './api.js';
 
 const listaParcelasDiv = document.getElementById('listaParcelas');
 const searchInput = document.getElementById('searchCliente');
 
-async function fetchVendas() {
-  try {
-    return await window.apiRequest('vendas', 'GET');
-  } catch (error) {
-    console.error('Erro ao buscar vendas:', error);
-    return [];
-  }
-}
-
-async function fetchClientes() {
-  try {
-    return await window.apiRequest('clientes', 'GET');
-  } catch (error) {
-    console.error('Erro ao buscar clientes:', error);
-    return [];
-  }
-}
-
-async function fetchProdutos() {
-  try {
-    return await window.apiRequest('produtos', 'GET');
-  } catch (error) {
-    console.error('Erro ao buscar produtos:', error);
-    return [];
-  }
-}
-
-/**
- * Carrega as vendas que possuem parcelas pendentes
- */
 async function carregarParcelas() {
   try {
-    const vendas = await fetchVendas();
-    const clientes = await fetchClientes();
-    const produtos = await fetchProdutos();
-    
-    // Filtra as vendas com parcelas > 1 e que ainda não foram quitadas
-    let pendentes = vendas.filter(v => v.parcelas > 1 && v.paid_installments < v.parcelas);
+    const vendas = await apiRequest('vendas');
+    const clientes = await apiRequest('clientes');
+    const produtos = await apiRequest('produtos');
 
-    // Filtra por nome do cliente se houver termo na busca
+    let pendentes = vendas.filter(v =>
+      v.parcelas > 1 && v.paid_installments < v.parcelas
+    );
+
     const termo = searchInput.value.toLowerCase();
     if (termo) {
       pendentes = pendentes.filter(v => {
@@ -57,9 +28,11 @@ async function carregarParcelas() {
       const prod = produtos.find(p => p.id === v.produto_id);
       if (!cli || !prod) return;
 
-      // Calcula o valor da parcela: (preço * quantidade - entrada) / total de parcelas
-      const valorParcelaNum = (parseFloat(prod.preco) * v.qtd - parseFloat(v.entrada)) / v.parcelas;
-      const valorParcelaStr = valorParcelaNum.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+      const valorParcelaNum = ((prod.preco * v.qtd) - v.entrada) / v.parcelas;
+      const valorParcelaStr = valorParcelaNum.toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      });
       const restantes = v.parcelas - v.paid_installments;
 
       const card = document.createElement('div');
@@ -72,8 +45,8 @@ async function carregarParcelas() {
         <button class="btn-pagar">Registrar Pagamento</button>
         <button class="btn-pdf">Gerar Recibo</button>
       `;
-      
-      // Ao clicar em "Registrar Pagamento" cria um input para selecionar arquivo e envia o comprovante.
+
+      // Registrar pagamento (upload comprovante)
       card.querySelector('.btn-pagar').onclick = () => {
         const inp = document.createElement('input');
         inp.type = 'file';
@@ -84,12 +57,13 @@ async function carregarParcelas() {
           const reader = new FileReader();
           reader.onload = async () => {
             try {
-              // Chama o endpoint de comprovantes (POST) enviando o data URL da imagem
-              await window.apiRequest('comprovantes', 'POST', { venda_id: v.id, imagem: reader.result });
-              // Após registro, recarrega as parcelas para atualizar o número de parcelas pagas
+              await apiRequest('comprovantes', 'POST', {
+                venda_id: v.id,
+                imagem: reader.result
+              });
               carregarParcelas();
-            } catch (error) {
-              console.error('Erro ao registrar pagamento:', error);
+            } catch (err) {
+              console.error('Erro ao registrar pagamento:', err);
             }
           };
           reader.readAsDataURL(file);
@@ -97,15 +71,32 @@ async function carregarParcelas() {
         inp.click();
       };
 
-      // Ao clicar em "Gerar Recibo", emite um alerta (ou implementa o PDF usando, por exemplo, jsPDF)
-      card.querySelector('.btn-pdf').onclick = () => {
-        alert('Funcionalidade de gerar PDF (recibo) não foi implementada nesta versão.');
+      // Gerar recibo
+      card.querySelector('.btn-pdf').onclick = async () => {
+        try {
+          const data = await apiRequest(`vendas/${v.id}/recibo`);
+          const html = `
+            <html><head><title>Recibo</title></head><body>
+              <h1>Recibo de Pagamento</h1>
+              <p>Recebi de ${data.cliente} (CPF: ${data.cpf}) a quantia de R$ ${data.valor_parcela.toFixed(2)}</p>
+              <p>Referente à parcela ${data.num_parcela} do produto ${data.produto}</p>
+              <p>Venda realizada em ${new Date(data.data_venda).toLocaleDateString()}</p>
+              <p>Entrada: R$ ${data.valor_entrada.toFixed(2)} / Total: R$ ${data.valor_total.toFixed(2)}</p>
+              <p>Observações: ${data.observacoes}</p>
+              <p>Local e Data: ${data.local}, ${new Date(data.data_emissao).toLocaleString()}</p>
+            </body></html>`;
+          const w = window.open('', '_blank');
+          w.document.write(html);
+          w.document.close();
+        } catch (err) {
+          console.error('Erro ao gerar recibo:', err);
+        }
       };
 
       listaParcelasDiv.appendChild(card);
     });
-  } catch (error) {
-    console.error('Erro ao carregar parcelas:', error);
+  } catch (err) {
+    console.error('Erro ao carregar parcelas:', err);
   }
 }
 

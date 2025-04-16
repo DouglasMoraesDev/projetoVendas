@@ -1,12 +1,9 @@
 // src/models/comprovantes.js
+import { mysqlTable, int, longtext, timestamp } from 'drizzle-orm/mysql-core';
 
-const { mysqlTable, int, longtext, timestamp } = require('drizzle-orm/mysql-core');
-
-const comprovantes = mysqlTable('comprovantes', {
+export const comprovantes = mysqlTable('comprovantes', {
   id: int('id').primaryKey().autoincrement(),
   venda_id: int('venda_id').notNull(),
   imagem: longtext('imagem').notNull(),
-  created_at: timestamp('created_at').defaultNow()
+  created_at: timestamp('created_at').defaultNow(),
 });
-
-module.exports = { comprovantes };

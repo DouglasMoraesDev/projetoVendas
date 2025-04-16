@@ -1,32 +1,29 @@
 // src/controllers/clientesController.js
+import { clientes } from '../models/clientes.js';
+import { eq } from 'drizzle-orm';
 
-const { clientes } = require('../models/clientes');
-const { eq } = require('drizzle-orm');
-
-const listarClientes = async (db, req, res) => {
+export async function listarClientes(db, req, res) {
   try {
-    const allClientes = await db.select().from(clientes);
-    res.json(allClientes);
+    const all = await db.select().from(clientes);
+    res.json(all);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erro ao listar clientes' });
   }
-};
+}
 
-const adicionarCliente = async (db, req, res) => {
+export async function adicionarCliente(db, req, res) {
   const { nome, cpf, endereco, contato } = req.body;
   try {
-    const result = await db
-      .insert(clientes)
-      .values({ nome, cpf, endereco, contato });
+    const result = await db.insert(clientes).values({ nome, cpf, endereco, contato });
     res.status(201).json({ id: result.insertId });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erro ao adicionar cliente' });
   }
-};
+}
 
-const atualizarCliente = async (db, req, res) => {
+export async function atualizarCliente(db, req, res) {
   const { id } = req.params;
   const { nome, cpf, endereco, contato } = req.body;
   try {
@@ -39,24 +36,15 @@ const atualizarCliente = async (db, req, res) => {
     console.error(err);
     res.status(500).json({ error: 'Erro ao atualizar cliente' });
   }
-};
+}
 
-const deletarCliente = async (db, req, res) => {
+export async function deletarCliente(db, req, res) {
   const { id } = req.params;
   try {
-    await db
-      .delete(clientes)
-      .where(eq(clientes.id, Number(id)));
+    await db.delete(clientes).where(eq(clientes.id, Number(id)));
     res.json({ message: 'Cliente removido' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erro ao deletar cliente' });
   }
-};
-
-module.exports = {
-  listarClientes,
-  adicionarCliente,
-  atualizarCliente,
-  deletarCliente
-};
+}

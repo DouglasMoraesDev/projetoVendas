@@ -1,19 +1,10 @@
 // src/routes/uploadRoutes.js
-const express = require('express');
-const router = express.Router();
-const upload = require('../middlewares/upload');
+import express from 'express';
+import { upload } from '../middlewares/upload.js';
 
-// Rota para upload de um único arquivo (campo "image")
+const router = express.Router();
 router.post('/', upload.single('image'), (req, res) => {
-  try {
-    // req.file possui as informações do arquivo enviado.
-    return res.status(200).json({ 
-      message: 'Upload realizado com sucesso!', 
-      imageUrl: req.file.path 
-    });
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
-  }
+  res.status(200).json({ message: 'Upload realizado!', imageUrl: req.file.path });
 });
 
-module.exports = router;
+export default router;

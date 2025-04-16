@@ -1,20 +1,21 @@
-// src/js/dashboard.js
+// public/js/dashboard.js
+import { apiRequest } from './api.js';
 
-  
-  // Função para exibir o histórico de parcelas no dashboard
-  function renderParcelas(parcelas) {
-    const parcelasSection = document.getElementById('parcelas');
-    parcelasSection.innerHTML = '<h2>Parcelas</h2>';
-  
-    parcelas.forEach(parcela => {
-      const p = document.createElement('p');
-      p.textContent = `Parcela ID: ${parcela.id}, Valor: ${parcela.valor}`;
-      parcelasSection.appendChild(p);
-    });
+async function loadDashboard() {
+  try {
+    const stats = await apiRequest('dashboard');
+    document.getElementById('welcome').innerText = stats.welcome;
+    document.getElementById('total-clientes').innerText = stats.clientes;
+    document.getElementById('total-produtos').innerText = stats.produtos;
+    document.getElementById('total-vendas').innerText = stats.vendas;
+
+    const notifEl = document.getElementById('notificacoes');
+    notifEl.innerHTML = stats.notifications.length
+      ? stats.notifications.map(n => `<li>${n}</li>`).join('')
+      : '<li>Sem notificações hoje.</li>';
+  } catch (err) {
+    console.error('Erro ao carregar dashboard:', err);
   }
-  
-  // Chama as funções para buscar informações do usuário, comprovantes e parcelas
-  document.addEventListener('DOMContentLoaded', () => {
+}
 
-  });
-  
+window.addEventListener('DOMContentLoaded', loadDashboard);

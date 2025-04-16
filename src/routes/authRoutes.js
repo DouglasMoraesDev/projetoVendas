@@ -1,9 +1,9 @@
 // src/routes/authRoutes.js
-const express = require('express');
-const router = express.Router();
-const authController = require('../controllers/authController');
+import express from 'express';
+import { login } from '../controllers/authController.js';
 
-module.exports = (db) => {
-  router.post('/login', (req, res) => authController.login(db, req, res));
+export default function(db) {
+  const router = express.Router();
+  router.post('/login', (req, res) => login(db, req, res));
   return router;
-};
+}

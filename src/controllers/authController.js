@@ -1,11 +1,10 @@
 // src/controllers/authController.js
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { users } from '../models/users.js';
+import { eq } from 'drizzle-orm';
 
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const { users } = require('../models/users');
-const { eq } = require('drizzle-orm');
-
-const login = async (db, req, res) => {
+export async function login(db, req, res) {
   const { username, password } = req.body;
   try {
     const [user] = await db
@@ -13,26 +12,18 @@ const login = async (db, req, res) => {
       .from(users)
       .where(eq(users.username, username));
 
-    if (!user) {
-      return res.status(401).json({ error: 'Usuário não encontrado' });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Senha incorreta' });
-    }
+    if (!user) return res.status(401).json({ error: 'Usuário não encontrado' });
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) return res.status(401).json({ error: 'Senha incorreta' });
 
     const token = jwt.sign(
       { id: user.id, username: user.username },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
-
     res.json({ token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erro de servidor' });
   }
-};
-
-module.exports = { login };
+}

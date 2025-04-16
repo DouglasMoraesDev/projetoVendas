@@ -10,7 +10,7 @@ loginForm.addEventListener('submit', async (e) => {
   const password = document.getElementById('password').value;
 
   try {
-    const data = await window.apiRequest('auth/login', 'POST', { username, password });
+    const data = await window.api.request('auth/login', 'POST', { username, password });
     localStorage.setItem('token', data.token);
     window.location.href = 'dashboard.html';
   } catch (error) {

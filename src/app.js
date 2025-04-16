@@ -1,42 +1,45 @@
 // src/app.js
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const createDbConnection = require('./config/database');
+import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+import { createDbConnection } from './config/database.js';
+import authRoutes from './routes/authRoutes.js';
+import clientesRoutes from './routes/clientesRoutes.js';
+import produtosRoutes from './routes/produtosRoutes.js';
+import vendasRoutes from './routes/vendasRoutes.js';
+import comprovantesRoutes from './routes/comprovantesRoutes.js';
+import uploadRoutes from './routes/uploadRoutes.js';
 
-// Middlewares
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// 1) Serve tudo de public/ (páginas, css, js)
-app.use(express.static(path.join(__dirname, '../public')));
+async function start() {
+  try {
+    const db = await createDbConnection();
 
-// 2) Serve somente as imagens que estão em public/uploads
-app.use(
-  '/uploads',
-  express.static(path.join(__dirname, '../public/uploads'))
-);
+    const app = express();
+    app.use(cors());
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
 
-createDbConnection()
-  .then((db) => {
-    const authRoutes = require('./routes/authRoutes')(db);
-    app.use('/api/auth', authRoutes);
+    app.use(express.static(path.join(__dirname, '../public')));
+    app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
-    const { authenticate } = require('./middlewares/authMiddleware');
-    app.use('/api/clientes',    authenticate, require('./routes/clientesRoutes')(db));
-    app.use('/api/produtos',    authenticate, require('./routes/produtosRoutes')(db));
-    app.use('/api/vendas',      authenticate, require('./routes/vendasRoutes')(db));
-    app.use('/api/comprovantes',authenticate, require('./routes/comprovantesRoutes')(db));
+    app.use('/api/auth', authRoutes(db));
+    app.use('/api/clientes', clientesRoutes(db));
+    app.use('/api/produtos', produtosRoutes(db));
+    app.use('/api/vendas', vendasRoutes(db));
+    app.use('/api/comprovantes', comprovantesRoutes(db));
+    app.use('/api/upload', uploadRoutes);
 
-    app.listen(PORT, () => {
-      console.log(`Servidor rodando na porta ${PORT}`);
-    });
-  })
-  .catch((err) => {
-    console.error('Erro ao conectar ao banco:', err);
-  });
+    const port = process.env.PORT ?? 3000;
+    app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));
+  } catch (err) {
+    console.error('Erro ao iniciar servidor:', err);
+  }
+}
+
+start();
