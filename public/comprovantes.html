@@ -13,7 +13,30 @@
     <button onclick="window.location.href='vendas.html'">Voltar</button>
   </header>
 
-  <main id="comprovanteContainer">
+  <main id="comprovanteContainer"><!DOCTYPE html>
+    <html lang="pt-br">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+      <title>Comprovantes de Pagamento</title>
+      <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+      <header>
+        <h1>Comprovantes</h1>
+        <button onclick="window.print()">Imprimir</button>
+        <button onclick="window.location.href='parcelas.html'">Voltar</button>
+      </header>
+    
+      <main id="listaComprovantes">
+        <!-- Os comprovantes serão exibidos aqui via JS -->
+      </main>
+    
+      <script src="js/api.js"></script>
+      <script src="js/comprovantes.js"></script>
+    </body>
+    </html>
+    
     <!-- Conteúdo será inserido via JS -->
   </main>
 

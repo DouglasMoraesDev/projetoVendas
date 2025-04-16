@@ -19,16 +19,28 @@ window.apiRequest = async (endpoint, method = 'GET', data) => {
       'Content-Type': 'application/json'
     }
   };
+
   if (token) {
     options.headers['Authorization'] = `Bearer ${token}`;
   }
+
   if (data) {
     options.body = JSON.stringify(data);
   }
+
   const response = await fetch(`${API_URL}/${endpoint}`, options);
+
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'Erro na requisição');
+    // Tente extrair JSON; se falhar, lança um erro genérico
+    let errorMessage = 'Erro na requisição';
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.error || errorMessage;
+    } catch (e) {
+      // Caso não seja JSON, pode-se usar response.statusText ou outra mensagem
+      errorMessage = response.statusText || errorMessage;
+    }
+    throw new Error(errorMessage);
   }
   return response.json();
 };

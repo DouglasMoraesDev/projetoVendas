@@ -7,7 +7,7 @@ async function fetchVendas() {
   try {
     return await window.apiRequest('vendas', 'GET');
   } catch (error) {
-    console.error(error);
+    console.error('Erro ao buscar vendas:', error);
     return [];
   }
 }
@@ -16,7 +16,7 @@ async function fetchClientes() {
   try {
     return await window.apiRequest('clientes', 'GET');
   } catch (error) {
-    console.error(error);
+    console.error('Erro ao buscar clientes:', error);
     return [];
   }
 }
@@ -25,7 +25,7 @@ async function fetchProdutos() {
   try {
     return await window.apiRequest('produtos', 'GET');
   } catch (error) {
-    console.error(error);
+    console.error('Erro ao buscar produtos:', error);
     return [];
   }
 }
@@ -38,7 +38,8 @@ async function carregarParcelas() {
     const vendas = await fetchVendas();
     const clientes = await fetchClientes();
     const produtos = await fetchProdutos();
-    // Filtra as vendas com parcelas > 1 e ainda não quitadas (v.paid_installments < v.parcelas)
+    
+    // Filtra as vendas com parcelas > 1 e que ainda não foram quitadas
     let pendentes = vendas.filter(v => v.parcelas > 1 && v.paid_installments < v.parcelas);
 
     // Filtra por nome do cliente se houver termo na busca
@@ -56,6 +57,7 @@ async function carregarParcelas() {
       const prod = produtos.find(p => p.id === v.produto_id);
       if (!cli || !prod) return;
 
+      // Calcula o valor da parcela: (preço * quantidade - entrada) / total de parcelas
       const valorParcelaNum = (parseFloat(prod.preco) * v.qtd - parseFloat(v.entrada)) / v.parcelas;
       const valorParcelaStr = valorParcelaNum.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
       const restantes = v.parcelas - v.paid_installments;
@@ -67,11 +69,11 @@ async function carregarParcelas() {
         <p><strong>Produto:</strong> ${prod.nome}</p>
         <p><strong>Valor Parcela:</strong> ${valorParcelaStr}</p>
         <p><strong>Restam:</strong> ${restantes} / ${v.parcelas}</p>
-        <button class="btn-pagar">Registrar Comprovante</button>
+        <button class="btn-pagar">Registrar Pagamento</button>
         <button class="btn-pdf">Gerar Recibo</button>
       `;
       
-      // Ao clicar em "Registrar Comprovante"
+      // Ao clicar em "Registrar Pagamento" cria um input para selecionar arquivo e envia o comprovante.
       card.querySelector('.btn-pagar').onclick = () => {
         const inp = document.createElement('input');
         inp.type = 'file';
@@ -81,14 +83,13 @@ async function carregarParcelas() {
           if (!file) return;
           const reader = new FileReader();
           reader.onload = async () => {
-            // Envia o comprovante para a API
             try {
+              // Chama o endpoint de comprovantes (POST) enviando o data URL da imagem
               await window.apiRequest('comprovantes', 'POST', { venda_id: v.id, imagem: reader.result });
-              // Atualize a contagem de parcelas pagas (pode chamar outro endpoint para atualizar ou refazer a listagem)
-              // Para fins de exemplo, apenas recarregue as parcelas:
+              // Após registro, recarrega as parcelas para atualizar o número de parcelas pagas
               carregarParcelas();
             } catch (error) {
-              console.error(error);
+              console.error('Erro ao registrar pagamento:', error);
             }
           };
           reader.readAsDataURL(file);
@@ -96,15 +97,15 @@ async function carregarParcelas() {
         inp.click();
       };
 
-      // Exemplo: Gerar PDF – implemente se desejar utilizar uma biblioteca como jsPDF
+      // Ao clicar em "Gerar Recibo", emite um alerta (ou implementa o PDF usando, por exemplo, jsPDF)
       card.querySelector('.btn-pdf').onclick = () => {
-        alert('Funcionalidade de gerar PDF não foi implementada nesta versão.');
+        alert('Funcionalidade de gerar PDF (recibo) não foi implementada nesta versão.');
       };
 
       listaParcelasDiv.appendChild(card);
     });
   } catch (error) {
-    console.error(error);
+    console.error('Erro ao carregar parcelas:', error);
   }
 }
 

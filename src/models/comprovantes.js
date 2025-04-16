@@ -1,4 +1,5 @@
 // src/models/comprovantes.js
+
 const { mysqlTable, int, longtext, timestamp } = require('drizzle-orm/mysql-core');
 
 const comprovantes = mysqlTable('comprovantes', {
