@@ -1,4 +1,4 @@
-// public/js/produtos.js
+// produtos.js
 
 const formProduto = document.getElementById('formProduto');
 const nomeInput = document.getElementById('nomeProd');
@@ -9,40 +9,44 @@ const btnSalvar = document.getElementById('btnSalvarProduto');
 const listaProdutos = document.getElementById('listaProdutos');
 let editProdutoId = null;
 
-// Formatador BRL
 const formatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
-// Ao sair do input de preço, formata em BRL
 precoInput.addEventListener('blur', (e) => {
   let v = e.target.value.replace(/[R$\.\s]/g, '').replace(/,/g, '.');
   const num = parseFloat(v);
   e.target.value = isNaN(num) ? '' : formatter.format(num);
 });
 
-// Ao focar, remove formatação
 precoInput.addEventListener('focus', (e) => {
   let v = e.target.value.replace(/[R$\.\s]/g, '').replace(/,/g, '.');
   e.target.value = v;
 });
 
-// Converte string BRL para number
 function parseBRL(v) {
   const num = parseFloat(v.replace(/[R$\.\s]/g, '').replace(/,/g, '.'));
   return isNaN(num) ? 0 : num;
 }
 
-// Requisições para a API
+// Requisição genérica
 async function apiRequest(url, method, data, isFormData = false) {
   const options = {
     method,
     headers: isFormData ? {} : { 'Content-Type': 'application/json' },
     body: isFormData ? data : JSON.stringify(data)
   };
-  const res = await fetch(url, options);
-  if (!res.ok) throw new Error('Erro na requisição');
-  return await res.json();
+
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok) throw new Error('Erro na requisição');
+    return await res.json();
+  } catch (error) {
+    console.error('Erro na API:', error.message);
+    alert('Houve um erro na requisição. Tente novamente mais tarde.');
+    throw error;
+  }
 }
 
+// Buscar produtos
 async function fetchProdutos() {
   try {
     return await apiRequest('/api/produtos', 'GET');
@@ -52,14 +56,20 @@ async function fetchProdutos() {
   }
 }
 
+// Renderizar lista de produtos
 async function renderProdutos() {
   const produtos = await fetchProdutos();
   listaProdutos.innerHTML = '';
 
+  if (produtos.length === 0) {
+    listaProdutos.innerHTML = '<li>Nenhum produto encontrado.</li>';
+    return;
+  }
+
   produtos.forEach(p => {
     const li = document.createElement('li');
     li.innerHTML = `
-      <img src="${p.foto ? '/' + p.foto : 'https://via.placeholder.com/50'}" class="produto" style="width:50px;height:50px">
+      <img src="${p.foto ? '/uploads/' + p.foto : 'https://via.placeholder.com/50'}" class="produto" style="width:50px;height:50px">
       <span>${p.nome}</span>
       <span>${formatter.format(p.preco)}</span>
       <span>Qtd: ${p.qtd}</span>
@@ -70,6 +80,7 @@ async function renderProdutos() {
   });
 }
 
+// Submissão do formulário
 formProduto.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -101,13 +112,16 @@ formProduto.addEventListener('submit', async (e) => {
     renderProdutos();
   } catch (err) {
     console.error(err);
+    alert('Erro ao salvar produto!');
   }
 });
 
+// Editar produto
 window.editProduto = async (id) => {
   const produtos = await fetchProdutos();
   const p = produtos.find(x => x.id === id);
   if (!p) return;
+
   nomeInput.value = p.nome;
   precoInput.value = formatter.format(p.preco);
   qtdInput.value = p.qtd;
@@ -115,13 +129,16 @@ window.editProduto = async (id) => {
   btnSalvar.textContent = 'Atualizar';
 };
 
+// Deletar produto
 window.deleteProduto = async (id) => {
   try {
     await apiRequest(`/api/produtos/${id}`, 'DELETE');
     renderProdutos();
   } catch (err) {
     console.error(err);
+    alert('Erro ao excluir produto!');
   }
 };
 
+// Chamar a função quando a página carregar
 document.addEventListener('DOMContentLoaded', renderProdutos);
