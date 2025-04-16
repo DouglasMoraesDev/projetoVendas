@@ -1,4 +1,7 @@
+// src/controllers/produtosController.js
+
 const { produtos } = require('../models/produtos');
+const { eq } = require('drizzle-orm'); // Importa a função eq do Drizzle ORM
 
 const listarProdutos = async (db, req, res) => {
   try {
@@ -41,7 +44,8 @@ const atualizarProduto = async (db, req, res) => {
     };
     if (foto) updateData.foto = foto;
 
-    await db.update(produtos).set(updateData).where(produtos.id.eq(Number(id)));
+    // Utiliza a função eq para compor a condição WHERE
+    await db.update(produtos).set(updateData).where(eq(produtos.id, Number(id)));
     res.json({ message: 'Produto atualizado!' });
   } catch (err) {
     console.error('Erro ao atualizar produto:', err);
@@ -52,7 +56,8 @@ const atualizarProduto = async (db, req, res) => {
 const deletarProduto = async (db, req, res) => {
   const { id } = req.params;
   try {
-    await db.delete(produtos).where(produtos.id.eq(Number(id)));
+    // Utiliza a função eq para compor a condição WHERE
+    await db.delete(produtos).where(eq(produtos.id, Number(id)));
     res.json({ message: 'Produto deletado!' });
   } catch (err) {
     console.error('Erro ao deletar produto:', err);
