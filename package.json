@@ -1,7 +1,6 @@
 {
   "name": "sistema-vendas",
   "version": "1.0.0",
-  "main": "src/app.js",
   "type": "module",
   "scripts": {
     "start": "node src/app.js",
