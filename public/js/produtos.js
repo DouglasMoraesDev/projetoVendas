@@ -68,9 +68,9 @@ async function renderProdutos() {
     return;
   }
   produtos.forEach(p => {
-    // monta a URL absoluta para a imagem no backend
+    // p.foto já é algo como 'uploads/arquivo.ext'
     const imgUrl = p.foto
-      ? `${API_BASE_URL}/uploads/${p.foto}`
+      ? `${API_BASE_URL}/${p.foto}`
       : 'https://via.placeholder.com/50';
 
     const li = document.createElement('li');
