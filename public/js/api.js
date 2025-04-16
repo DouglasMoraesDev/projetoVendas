@@ -1,35 +1,21 @@
 // public/js/api.js
-
-const API_URL = 'http://localhost:3000/api';
-
-/**
- * Centraliza chamadas à API.
- * @param {string} endpoint — ex: 'vendas', 'vendas/1/recibo'
- * @param {string} [method='GET']
- * @param {object} [data]
- */
-export async function apiRequest(endpoint, method = 'GET', data = null) {
-  const token = localStorage.getItem('token');
-  const options = {
+// Função genérica para chamadas à API (usa sempre /api como prefixo)
+export async function apiRequest(endpoint, method = 'GET', data = null, isFormData = false) {
+  const url = `${window.location.origin}/api/${endpoint}`;
+  const opts = {
     method,
-    headers: { 'Content-Type': 'application/json' }
+    headers: isFormData ? {} : { 'Content-Type': 'application/json' },
   };
 
-  if (token) {
-    options.headers['Authorization'] = `Bearer ${token}`;
-  }
-  if (data) {
-    options.body = JSON.stringify(data);
-  }
+  const token = localStorage.getItem('token');
+  if (token) opts.headers['Authorization'] = `Bearer ${token}`;
+  if (data) opts.body = isFormData ? data : JSON.stringify(data);
 
-  const res = await fetch(`${API_URL}/${endpoint}`, options);
+  const res = await fetch(url, opts);
   if (!res.ok) {
-    let msg = 'Erro na requisição';
-    try {
-      const errJson = await res.json();
-      msg = errJson.error || msg;
-    } catch {}
-    throw new Error(msg);
+    let errMsg = `Erro ${res.status}`;
+    try { const err = await res.json(); errMsg = err.error || err.message; } catch {}
+    throw new Error(errMsg);
   }
   return res.json();
 }

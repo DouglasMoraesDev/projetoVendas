@@ -1,4 +1,4 @@
-// src/routes/produtosRoutes.js
+// produtosRoutes.js
 import express from 'express';
 import {
   listarProdutos,

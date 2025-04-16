@@ -1,20 +1,20 @@
 // public/js/auth.js
-const loginForm = document.getElementById('loginForm');
-const loginError = document.getElementById('loginError');
+import { apiRequest } from './api.js';
 
-loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  loginError.textContent = '';
-
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value;
-
-  try {
-    const data = await window.api.request('auth/login', 'POST', { username, password });
-    localStorage.setItem('token', data.token);
-    window.location.href = 'dashboard.html';
-  } catch (error) {
-    console.error('Erro no login:', error);
-    loginError.textContent = error.message || 'Falha no login';
-  }
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('loginForm');
+  const errorP = document.getElementById('loginError');
+  form?.addEventListener('submit', async e => {
+    e.preventDefault();
+    errorP.textContent = '';
+    const username = form.username.value.trim();
+    const password = form.password.value;
+    try {
+      const { token } = await apiRequest('auth/login', 'POST', { username, password });
+      localStorage.setItem('token', token);
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      errorP.textContent = err.message;
+    }
+  });
 });

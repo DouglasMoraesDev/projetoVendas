@@ -1,4 +1,4 @@
-// src/controllers/produtosController.js
+// CRUD para produtos, incluindo upload e remoção de imagens
 import { produtos } from '../models/produtos.js';
 import { eq } from 'drizzle-orm';
 import fs from 'fs';

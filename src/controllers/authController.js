@@ -1,4 +1,4 @@
-// src/controllers/authController.js
+// Gerencia autenticação de usuários e emissão de JWT
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { users } from '../models/users.js';

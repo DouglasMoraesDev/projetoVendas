@@ -1,95 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Comprovante de Venda</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Comprovantes</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <header>
-    <h1>Comprovante</h1>
-    <button onclick="window.print()">Imprimir</button>
-    <button onclick="window.location.href='vendas.html'">Voltar</button>
+    <h1>Comprovantes</h1>
+    <button onclick="location.href='dashboard.html'">Voltar</button>
   </header>
-
-  <main id="comprovanteContainer"><!DOCTYPE html>
-    <html lang="pt-br">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-      <title>Comprovantes de Pagamento</title>
-      <link rel="stylesheet" href="css/style.css">
-    </head>
-    <body>
-      <header>
-        <h1>Comprovantes</h1>
-        <button onclick="window.print()">Imprimir</button>
-        <button onclick="window.location.href='parcelas.html'">Voltar</button>
-      </header>
-    
-      <main id="listaComprovantes">
-        <!-- Os comprovantes serão exibidos aqui via JS -->
-      </main>
-    
-      <script src="js/api.js"></script>
-      <script src="js/comprovantes.js"></script>
-    </body>
-    </html>
-    
-    <!-- Conteúdo será inserido via JS -->
+  <main>
+    <div id="comprovantes-container"></div>
   </main>
-
-  <script src="js/api.js"></script>
-  <script>
-    async function carregarComprovante() {
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get("id");
-      if (!id) {
-        document.getElementById("comprovanteContainer").innerHTML = "<p>ID inválido</p>";
-        return;
-      }
-
-      try {
-        const venda = await api.get(`/vendas/${id}`);
-        const container = document.getElementById("comprovanteContainer");
-
-        const dataVenda = new Date(venda.data).toLocaleDateString("pt-BR");
-        let html = `
-          <section class="comprovante">
-            <h2>Comprovante de Venda</h2>
-            <p><strong>ID da Venda:</strong> ${venda.id}</p>
-            <p><strong>Cliente:</strong> ${venda.cliente.nome}</p>
-            <p><strong>Data:</strong> ${dataVenda}</p>
-            <hr>
-            <h3>Itens:</h3>
-            <ul>
-        `;
-
-        venda.itens.forEach(item => {
-          html += `
-            <li>
-              ${item.produto.nome} - Quantidade: ${item.quantidade} - 
-              Preço: R$ ${item.produto.preco.toFixed(2)}
-            </li>
-          `;
-        });
-
-        html += `
-            </ul>
-            <hr>
-            <p><strong>Total:</strong> R$ ${venda.total.toFixed(2)}</p>
-          </section>
-        `;
-
-        container.innerHTML = html;
-      } catch (error) {
-        console.error("Erro ao carregar comprovante:", error);
-        document.getElementById("comprovanteContainer").innerHTML = "<p>Erro ao carregar dados.</p>";
-      }
-    }
-
-    carregarComprovante();
-  </script>
+  <script type="module" src="js/api.js"></script>
+  <script type="module" src="js/comprovantes.js"></script>
 </body>
 </html>

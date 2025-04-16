@@ -1,4 +1,4 @@
-// src/routes/comprovantesRoutes.js
+// comprovantesRoutes.js
 import express from 'express';
 import {
   listarComprovantes,

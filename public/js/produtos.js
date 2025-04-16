@@ -1,146 +1,77 @@
 // public/js/produtos.js
+import { apiRequest } from './api.js';
 
-// 1) URL base do seu backend Express
-const API_BASE_URL = 'http://127.0.0.1:3000';
+const form = document.getElementById('formProduto');
+const lista = document.getElementById('listaProdutos');
+const btn = document.getElementById('btnSalvarProduto');
+let editId = null;
 
-const formProduto     = document.getElementById('formProduto');
-const nomeInput       = document.getElementById('nomeProd');
-const precoInput      = document.getElementById('precoProd');
-const qtdInput        = document.getElementById('qtdProd');
-const fotoInput       = document.getElementById('fotoProd');
-const btnSalvar       = document.getElementById('btnSalvarProduto');
-const listaProdutos   = document.getElementById('listaProdutos');
-
-let editProdutoId = null;
-
-const formatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-
-precoInput.addEventListener('blur', (e) => {
-  let v = e.target.value.replace(/[R$\.\s]/g, '').replace(/,/g, '.');
-  const num = parseFloat(v);
-  e.target.value = isNaN(num) ? '' : formatter.format(num);
-});
-precoInput.addEventListener('focus', (e) => {
-  let v = e.target.value.replace(/[R$\.\s]/g, '').replace(/,/g, '.');
-  e.target.value = v;
-});
-function parseBRL(v) {
-  const num = parseFloat(v.replace(/[R$\.\s]/g, '').replace(/,/g, '.'));
-  return isNaN(num) ? 0 : num;
+function formatBRL(v) {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+    .format(parseFloat(v) || 0);
 }
 
-// 2) Função genérica de chamada à API, já com host/porta e token
-async function apiRequest(endpoint, method, data, isFormData = false) {
-  const url = `${API_BASE_URL}${endpoint}`;
-  const options = {
-    method,
-    headers: isFormData ? {} : { 'Content-Type': 'application/json' },
-    body: isFormData ? data : JSON.stringify(data)
-  };
+// Monitora formatação de preço
+form.precoProd.addEventListener('blur', e => {
+  e.target.value = formatBRL(e.target.value);
+});
+form.precoProd.addEventListener('focus', e => {
+  e.target.value = e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.');
+});
 
-  const token = localStorage.getItem('token');
-  if (token) {
-    options.headers = options.headers || {};
-    options.headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  const res = await fetch(url, options);
-  if (!res.ok) throw new Error(`Status ${res.status}`);
-  return res.json();
-}
-
-// 3) Busca lista de produtos
 async function fetchProdutos() {
-  try {
-    return await apiRequest('/api/produtos', 'GET');
-  } catch (err) {
-    console.error('Erro na API:', err);
-    return [];
-  }
+  return await apiRequest('produtos');
 }
 
-// 4) Renderiza os produtos na página
-async function renderProdutos() {
+async function render() {
   const produtos = await fetchProdutos();
-  listaProdutos.innerHTML = '';
-  if (produtos.length === 0) {
-    listaProdutos.innerHTML = '<li>Nenhum produto encontrado.</li>';
-    return;
-  }
-  produtos.forEach(p => {
-    // p.foto já é algo como 'uploads/arquivo.ext'
-    const imgUrl = p.foto
-      ? `${API_BASE_URL}/${p.foto}`
-      : 'https://via.placeholder.com/50';
-
-    const li = document.createElement('li');
-    li.innerHTML = `
-      <img src="${imgUrl}" style="width:50px;height:50px" />
-      <span>${p.nome}</span>
-      <span>${formatter.format(p.preco)}</span>
-      <span>Qtd: ${p.qtd}</span>
-      <button onclick="editProduto(${p.id})">✏️</button>
-      <button onclick="deleteProduto(${p.id})">❌</button>
+  lista.innerHTML = produtos.map(p => {
+    const img = p.foto ? `/uploads/${p.foto}` : 'https://via.placeholder.com/50';
+    return `
+      <li>
+        <img src="${img}" width="50" height="50" />
+        ${p.nome} — ${formatBRL(p.preco)} — Qtd: ${p.qtd}
+        <button onclick="editar(${p.id})">✏️</button>
+        <button onclick="deletar(${p.id})">❌</button>
+      </li>
     `;
-    listaProdutos.appendChild(li);
-  });
+  }).join('') || '<li>Nenhum produto encontrado.</li>';
 }
 
-// 5) Envio do formulário para criar/atualizar
-formProduto.addEventListener('submit', async (e) => {
+form.addEventListener('submit', async e => {
   e.preventDefault();
-  const nome  = nomeInput.value.trim();
-  const preco = parseBRL(precoInput.value);
-  const qtd   = parseInt(qtdInput.value, 10) || 0;
-  const file  = fotoInput.files[0];
+  const data = new FormData();
+  data.append('nome', form.nomeProd.value.trim());
+  data.append('preco', form.precoProd.value.replace(/[^0-9.,]/g, '').replace(',', '.'));
+  data.append('qtd', form.qtdProd.value);
+  if (form.fotoProd.files[0]) data.append('image', form.fotoProd.files[0]);
 
-  const formData = new FormData();
-  formData.append('nome', nome);
-  formData.append('preco', preco);
-  formData.append('qtd', qtd);
-  if (file) formData.append('image', file);
-
-  let endpoint = '/api/produtos';
-  let method   = 'POST';
-  if (editProdutoId) {
-    endpoint = `/api/produtos/${editProdutoId}`;
-    method   = 'PUT';
+  if (editId) {
+    await apiRequest(`produtos/${editId}`, 'PUT', data, true);
+    editId = null;
+    btn.textContent = 'Cadastrar';
+  } else {
+    await apiRequest('produtos', 'POST', data, true);
   }
-
-  try {
-    await apiRequest(endpoint, method, formData, true);
-    formProduto.reset();
-    editProdutoId = null;
-    btnSalvar.textContent = 'Cadastrar';
-    renderProdutos();
-  } catch (err) {
-    console.error('Erro ao salvar produto:', err);
-    alert('Houve um erro ao salvar o produto.');
-  }
+  form.reset();
+  render();
 });
 
-// 6) Funções auxiliares de editar e deletar
-window.editProduto = async (id) => {
+window.editar = async id => {
   const produtos = await fetchProdutos();
   const p = produtos.find(x => x.id === id);
-  if (!p) return;
-  nomeInput.value  = p.nome;
-  precoInput.value = formatter.format(p.preco);
-  qtdInput.value   = p.qtd;
-  editProdutoId    = id;
-  btnSalvar.textContent = 'Atualizar';
+  form.nomeProd.value = p.nome;
+  form.precoProd.value = formatBRL(p.preco);
+  form.qtdProd.value = p.qtd;
+  editId = id;
+  btn.textContent = 'Atualizar';
 };
 
-window.deleteProduto = async (id) => {
-  if (!confirm('Confirma exclusão deste produto?')) return;
-  try {
-    await apiRequest(`/api/produtos/${id}`, 'DELETE');
-    renderProdutos();
-  } catch (err) {
-    console.error('Erro ao excluir produto:', err);
-    alert('Não foi possível excluir o produto.');
+window.deletar = async id => {
+  if (confirm('Confirma exclusão?')) {
+    await apiRequest(`produtos/${id}`, 'DELETE');
+    render();
   }
 };
 
-// 7) Ao carregar a página, já busca e renderiza
-document.addEventListener('DOMContentLoaded', renderProdutos);
+document.addEventListener('DOMContentLoaded', render);

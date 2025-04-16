@@ -1,104 +1,87 @@
 // public/js/parcelas.js
 import { apiRequest } from './api.js';
 
-const listaParcelasDiv = document.getElementById('listaParcelas');
-const searchInput = document.getElementById('searchCliente');
+const lista = document.getElementById('listaParcelas');
+const search = document.getElementById('searchCliente');
 
-async function carregarParcelas() {
-  try {
-    const vendas = await apiRequest('vendas');
-    const clientes = await apiRequest('clientes');
-    const produtos = await apiRequest('produtos');
+async function carregar() {
+  let vendas = await apiRequest('vendas');
+  const clientes = await apiRequest('clientes');
+  const produtos = await apiRequest('produtos');
 
-    let pendentes = vendas.filter(v =>
-      v.parcelas > 1 && v.paid_installments < v.parcelas
-    );
-
-    const termo = searchInput.value.toLowerCase();
-    if (termo) {
-      pendentes = pendentes.filter(v => {
-        const cli = clientes.find(c => c.id === v.cliente_id);
-        return cli && cli.nome.toLowerCase().includes(termo);
-      });
-    }
-
-    listaParcelasDiv.innerHTML = '';
-    pendentes.forEach(v => {
-      const cli = clientes.find(c => c.id === v.cliente_id);
-      const prod = produtos.find(p => p.id === v.produto_id);
-      if (!cli || !prod) return;
-
-      const valorParcelaNum = ((prod.preco * v.qtd) - v.entrada) / v.parcelas;
-      const valorParcelaStr = valorParcelaNum.toLocaleString('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-      });
-      const restantes = v.parcelas - v.paid_installments;
-
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <h3>${cli.nome}</h3>
-        <p><strong>Produto:</strong> ${prod.nome}</p>
-        <p><strong>Valor Parcela:</strong> ${valorParcelaStr}</p>
-        <p><strong>Restam:</strong> ${restantes} / ${v.parcelas}</p>
-        <button class="btn-pagar">Registrar Pagamento</button>
-        <button class="btn-pdf">Gerar Recibo</button>
-      `;
-
-      // Registrar pagamento (upload comprovante)
-      card.querySelector('.btn-pagar').onclick = () => {
-        const inp = document.createElement('input');
-        inp.type = 'file';
-        inp.accept = 'image/*';
-        inp.onchange = async e => {
-          const file = e.target.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = async () => {
-            try {
-              await apiRequest('comprovantes', 'POST', {
-                venda_id: v.id,
-                imagem: reader.result
-              });
-              carregarParcelas();
-            } catch (err) {
-              console.error('Erro ao registrar pagamento:', err);
-            }
-          };
-          reader.readAsDataURL(file);
-        };
-        inp.click();
-      };
-
-      // Gerar recibo
-      card.querySelector('.btn-pdf').onclick = async () => {
-        try {
-          const data = await apiRequest(`vendas/${v.id}/recibo`);
-          const html = `
-            <html><head><title>Recibo</title></head><body>
-              <h1>Recibo de Pagamento</h1>
-              <p>Recebi de ${data.cliente} (CPF: ${data.cpf}) a quantia de R$ ${data.valor_parcela.toFixed(2)}</p>
-              <p>Referente à parcela ${data.num_parcela} do produto ${data.produto}</p>
-              <p>Venda realizada em ${new Date(data.data_venda).toLocaleDateString()}</p>
-              <p>Entrada: R$ ${data.valor_entrada.toFixed(2)} / Total: R$ ${data.valor_total.toFixed(2)}</p>
-              <p>Observações: ${data.observacoes}</p>
-              <p>Local e Data: ${data.local}, ${new Date(data.data_emissao).toLocaleString()}</p>
-            </body></html>`;
-          const w = window.open('', '_blank');
-          w.document.write(html);
-          w.document.close();
-        } catch (err) {
-          console.error('Erro ao gerar recibo:', err);
-        }
-      };
-
-      listaParcelasDiv.appendChild(card);
+  // Filtra pendentes
+  let pend = vendas.filter(v => v.parcelas > 1 && v.paid_installments < v.parcelas);
+  const termo = search.value.toLowerCase();
+  if (termo) {
+    pend = pend.filter(v => {
+      const c = clientes.find(c => c.id === v.cliente_id);
+      return c?.nome.toLowerCase().includes(termo);
     });
-  } catch (err) {
-    console.error('Erro ao carregar parcelas:', err);
   }
+
+  lista.innerHTML = pend.map(v => {
+    const c = clientes.find(x => x.id === v.cliente_id);
+    const p = produtos.find(x => x.id === v.produto_id);
+    const total = p.preco * v.qtd;
+    const parcelaVal = ((total - v.entrada) / v.parcelas)
+      .toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+    const restantes = v.parcelas - v.paid_installments;
+    return `
+      <div class="card">
+        <h3>${c.nome}</h3>
+        <p><strong>Produto:</strong> ${p.nome}</p>
+        <p><strong>Valor Parcela:</strong> ${parcelaVal}</p>
+        <p><strong>Restam:</strong> ${restantes} de ${v.parcelas}</p>
+        <button class="btn-pagar" data-id="${v.id}">Registrar Pagamento</button>
+        <button class="btn-pdf" data-id="${v.id}">Gerar Recibo</button>
+      </div>
+    `;
+  }).join('') || '<p>Sem parcelas pendentes.</p>';
+
+  // Eventos
+  document.querySelectorAll('.btn-pagar').forEach(btn => {
+    btn.onclick = () => pagar(btn.dataset.id);
+  });
+  document.querySelectorAll('.btn-pdf').forEach(btn => {
+    btn.onclick = () => gerar(btn.dataset.id);
+  });
 }
 
-searchInput.addEventListener('input', carregarParcelas);
-document.addEventListener('DOMContentLoaded', carregarParcelas);
+async function pagar(id) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async e => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = async () => {
+      await apiRequest('comprovantes', 'POST', {
+        venda_id: id,
+        imagem: reader.result
+      });
+      carregar();
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+async function gerar(id) {
+  const data = await apiRequest(`vendas/${id}/recibo`);
+  const html = `
+    <html><body>
+      <h1>Recibo</h1>
+      <p>${data.cliente} (CPF: ${data.cpf}) — R$ ${data.valor_parcela.toFixed(2)}</p>
+      <p>Parcela ${data.num_parcela} / ${data.parcelas}</p>
+      <p>Produto: ${data.produto}</p>
+      <p>Venda: ${new Date(data.data_venda).toLocaleDateString()}</p>
+      <p>Entrada: R$ ${data.valor_entrada.toFixed(2)}</p>
+      <p>Total: R$ ${data.valor_total.toFixed(2)}</p>
+      <p>Obs: ${data.observacoes}</p>
+      <p>${data.local}, ${new Date(data.data_emissao).toLocaleString()}</p>
+    </body></html>`;
+  const w = window.open(); w.document.write(html); w.document.close();
+}
+
+search.addEventListener('input', carregar);
+document.addEventListener('DOMContentLoaded', carregar);

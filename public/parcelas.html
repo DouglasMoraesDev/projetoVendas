@@ -1,23 +1,20 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Comprovantes</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <title>Parcelas Pendentes</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <header>
-    <h1>Comprovantes e Parcelas Pendentes</h1>
-    <button onclick="window.print()">Imprimir</button>
+    <h1>Parcelas Pendentes</h1>
     <button onclick="location.href='dashboard.html'">Voltar</button>
   </header>
-
   <main>
     <input type="text" id="searchCliente" placeholder="Buscar cliente..." />
-    <div id="listaParcelas" class="lista"></div>
+    <div id="listaParcelas"></div>
   </main>
-
   <script type="module" src="js/api.js"></script>
   <script type="module" src="js/parcelas.js"></script>
 </body>

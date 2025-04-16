@@ -1,4 +1,4 @@
-// src/controllers/clientesController.js
+// CRUD para clientes
 import { clientes } from '../models/clientes.js';
 import { eq } from 'drizzle-orm';
 

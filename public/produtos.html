@@ -11,20 +11,18 @@
     <h1>Produtos</h1>
     <button onclick="location.href='dashboard.html'">Voltar</button>
   </header>
-
   <main>
-    <form id="formProduto">
+    <form id="formProduto" enctype="multipart/form-data">
       <input type="text" id="nomeProd" placeholder="Nome do produto" required />
       <input type="text" id="precoProd" placeholder="Preço (R$)" required />
       <input type="number" id="qtdProd" placeholder="Quantidade" required min="0" />
       <input type="file" id="fotoProd" accept="image/*" />
       <button id="btnSalvarProduto" type="submit">Cadastrar</button>
     </form>
-
     <ul id="listaProdutos"></ul>
   </main>
 
-  <script src="js/api.js"></script>
-  <script src="js/produtos.js"></script>
+  <script type="module" src="js/api.js"></script>
+  <script type="module" src="js/produtos.js"></script>
 </body>
 </html>

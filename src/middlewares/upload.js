@@ -1,4 +1,4 @@
-// src/middlewares/upload.js
+// Configuração do Multer para uploads de imagens
 import fs from 'fs';
 import multer from 'multer';
 import path from 'path';
@@ -15,7 +15,8 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (_, file, cb) => {
-  const ok = /jpeg|jpg|png/.test(file.mimetype) && /jpeg|jpg|png/.test(path.extname(file.originalname).toLowerCase());
+  const ok = /jpeg|jpg|png/.test(file.mimetype)
+    && /jpeg|jpg|png/.test(path.extname(file.originalname).toLowerCase());
   cb(ok ? null : new Error('Formato inválido.'), ok);
 };
 

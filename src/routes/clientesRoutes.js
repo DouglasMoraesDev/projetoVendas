@@ -1,4 +1,4 @@
-// src/routes/clientesRoutes.js
+// clientesRoutes.js
 import express from 'express';
 import {
   listarClientes,

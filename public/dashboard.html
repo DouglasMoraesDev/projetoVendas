@@ -1,48 +1,37 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <header>
-    <h1>Dashboard</h1>
+    <h1 id="welcome">Dashboard</h1>
     <button id="logoutBtn">Sair</button>
   </header>
-
-  <main>
-    <button onclick="location.href='clientes.html'">Clientes</button>
-    <button onclick="location.href='produtos.html'">Produtos</button>
-    <button onclick="location.href='vendas.html'">Vendas</button>
-    <button onclick="location.href='parcelas.html'">Parcelas</button>
-    <button onclick="location.href='comprovantes.html'">Comprovantes</button>
-  </main>
-
   <main>
     <div class="cards">
-      <div class="card">
-        <h3>Clientes</h3>
-        <span id="total-clientes">0</span>
-      </div>
-      <div class="card">
-        <h3>Produtos</h3>
-        <span id="total-produtos">0</span>
-      </div>
-      <div class="card">
-        <h3>Vendas</h3>
-        <span id="total-vendas">0</span>
-      </div>
+      <div class="card"><h3>Clientes</h3><span id="total-clientes">0</span></div>
+      <div class="card"><h3>Produtos</h3><span id="total-produtos">0</span></div>
+      <div class="card"><h3>Vendas</h3><span id="total-vendas">0</span></div>
     </div>
-
     <section>
       <h3>Notificações</h3>
       <ul id="notificacoes"></ul>
     </section>
+    <nav>
+      <button onclick="location.href='clientes.html'">Clientes</button>
+      <button onclick="location.href='produtos.html'">Produtos</button>
+      <button onclick="location.href='vendas.html'">Vendas</button>
+      <button onclick="location.href='parcelas.html'">Parcelas</button>
+      <button onclick="location.href='comprovantes.html?venda_id=' + ''">Comprovantes</button>
+      <button onclick="location.href='historico.html'">Histórico</button>
+    </nav>
   </main>
 
-  <script src="js/api.js"></script>
-  <script src="js/dashboard.js"></script>
+  <script type="module" src="js/api.js"></script>
+  <script type="module" src="js/dashboard.js"></script>
 </body>
 </html>

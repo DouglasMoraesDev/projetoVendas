@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Vendas</title>
   <link rel="stylesheet" href="css/style.css">
@@ -11,48 +11,28 @@
     <h1>Vendas</h1>
     <button onclick="location.href='dashboard.html'">Voltar</button>
   </header>
-
   <main>
     <form id="formVenda">
-      <label for="selectCliente">Cliente:</label>
+      <label>Cliente:</label>
       <select id="selectCliente" required></select>
-
-      <label for="selectProduto">Produto:</label>
+      <label>Produto:</label>
       <select id="selectProduto" required></select>
-
-      <label for="qtdVenda">Quantidade:</label>
-      <input type="number" id="qtdVenda" value="1" min="1" required />
-
-      <label for="precoVenda">Preço Unitário:</label>
-      <input type="text" id="precoVenda" readonly />
-
-      <label for="totalVenda">Total:</label>
-      <input type="text" id="totalVenda" readonly />
-
-      <label for="entradaVenda">Valor de Entrada:</label>
-      <input type="text" id="entradaVenda" placeholder="0,00" />
-
-      <label for="parcelasVenda">Parcelas:</label>
-      <input type="number" id="parcelasVenda" value="1" min="1" required />
-
-      <label for="dueDay">Dia do Vencimento:</label>
-      <input type="number" id="dueDay" min="1" max="28" required />
-
-      <label for="valorParcela">Valor da Parcela:</label>
-      <input type="text" id="valorParcela" readonly />
-
-      <label for="obsVenda">Observação:</label>
-      <textarea id="obsVenda" placeholder="Observações da venda"></textarea>
-
-      <button type="submit" id="btnSubmitVenda">Registrar Venda</button>
-      <button type="button" id="btnCancelEdit" style="display:none;">Cancelar Edição</button>
+      <label>Qtd:</label><input type="number" id="qtdVenda" value="1" min="1" required/>
+      <label>Preço Unitário:</label><input type="text" id="precoVenda" readonly/>
+      <label>Total:</label><input type="text" id="totalVenda" readonly/>
+      <label>Entrada:</label><input type="text" id="entradaVenda" placeholder="0,00"/>
+      <label>Parcelas:</label><input type="number" id="parcelasVenda" value="1" min="1" required/>
+      <label>Dia Venc.:</label><input type="number" id="dueDay" min="1" max="28" required/>
+      <label>Valor Parcela:</label><input type="text" id="valorParcela" readonly/>
+      <label>Obs:</label><textarea id="obsVenda"></textarea>
+      <button id="btnSubmitVenda" type="submit">Registrar Venda</button>
+      <button id="btnCancelEdit" type="button" style="display:none;">Cancelar</button>
     </form>
-
     <h2>Vendas Registradas</h2>
     <ul id="listaVendas"></ul>
   </main>
 
-  <script src="js/api.js"></script>
-  <script src="js/vendas.js"></script>
+  <script type="module" src="js/api.js"></script>
+  <script type="module" src="js/vendas.js"></script>
 </body>
 </html>

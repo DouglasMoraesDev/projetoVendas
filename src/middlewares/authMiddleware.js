@@ -1,4 +1,4 @@
-// src/middlewares/authMiddleware.js
+// Verifica JWT em rotas protegidas
 import jwt from 'jsonwebtoken';
 
 export function authenticate(req, res, next) {

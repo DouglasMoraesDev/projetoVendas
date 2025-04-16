@@ -1,4 +1,6 @@
 // src/controllers/vendasController.js
+// CRUD para vendas, ajuste de estoque e geração de recibo
+
 import { vendas } from '../models/vendas.js';
 import { produtos } from '../models/produtos.js';
 import { clientes } from '../models/clientes.js';
@@ -18,13 +20,24 @@ export async function listarVendas(db, req, res) {
 export async function adicionarVenda(db, req, res) {
   const { cliente_id, produto_id, qtd, entrada, parcelas, due_day, obs } = req.body;
   try {
+    // Verifica estoque
     const [prod] = await db.select().from(produtos).where(eq(produtos.id, Number(produto_id)));
-    if (!prod || prod.qtd < qtd) return res.status(400).json({ error: 'Estoque insuficiente' });
+    if (!prod || prod.qtd < qtd) {
+      return res.status(400).json({ error: 'Estoque insuficiente' });
+    }
 
+    // Busca dados do cliente
     const [cli] = await db.select().from(clientes).where(eq(clientes.id, Number(cliente_id)));
-    await db.update(produtos).set({ qtd: prod.qtd - qtd }).where(eq(produtos.id, Number(produto_id)));
 
+    // Atualiza estoque
+    await db
+      .update(produtos)
+      .set({ qtd: prod.qtd - qtd })
+      .where(eq(produtos.id, Number(produto_id)));
+
+    // Insere venda
     const dataVenda = format(new Date(), 'yyyy-MM-dd');
+    const valorTotal = (prod.preco || 0) * qtd;
     const result = await db.insert(vendas).values({
       cliente_id,
       produto_id,
@@ -32,12 +45,14 @@ export async function adicionarVenda(db, req, res) {
       produto_name: prod.nome,
       qtd,
       entrada,
+      valor_total: valorTotal,
       parcelas,
       due_day,
       paid_installments: 0,
       obs,
       data: dataVenda
     });
+
     res.status(201).json({ id: result.insertId });
   } catch (err) {
     console.error(err);
@@ -48,10 +63,17 @@ export async function adicionarVenda(db, req, res) {
 export async function gerarRecibo(db, req, res) {
   try {
     const { id } = req.params;
-    const [v] = await db.select().from(vendas).where(eq(vendas.id, Number(id)));
-    if (!v) return res.status(404).json({ error: 'Venda não encontrada' });
 
+    // Busca venda
+    const [v] = await db.select().from(vendas).where(eq(vendas.id, Number(id)));
+    if (!v) {
+      return res.status(404).json({ error: 'Venda não encontrada' });
+    }
+
+    // Busca produto e cliente para compor recibo
     const [prod] = await db.select().from(produtos).where(eq(produtos.id, v.produto_id));
+    const [cli] = await db.select().from(clientes).where(eq(clientes.id, v.cliente_id));
+
     const valorTotal = (prod.preco || 0) * v.qtd;
     const valorParcela = (valorTotal - v.entrada) / v.parcelas;
     const numParcela = v.paid_installments + 1;
@@ -61,6 +83,7 @@ export async function gerarRecibo(db, req, res) {
       cpf: cli?.cpf ?? '—',
       valor_parcela: valorParcela,
       num_parcela: numParcela,
+      parcelas: v.parcelas,
       produto: v.produto_name,
       data_venda: v.data,
       valor_entrada: v.entrada,
@@ -83,6 +106,7 @@ export async function atualizarVenda(db, req, res) {
       .update(vendas)
       .set({ cliente_id, produto_id, qtd, entrada, parcelas, due_day, obs })
       .where(eq(vendas.id, Number(id)));
+
     res.json({ message: 'Venda atualizada!' });
   } catch (err) {
     console.error(err);

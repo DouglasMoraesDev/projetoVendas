@@ -1,4 +1,4 @@
-// src/config/database.js
+// Configura a conexão com MySQL usando variáveis de ambiente
 import 'dotenv/config';
 import mysql from 'mysql2/promise';
 import { drizzle } from 'drizzle-orm/mysql2';
