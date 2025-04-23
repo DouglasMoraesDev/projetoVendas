@@ -1,4 +1,3 @@
-// public/js/parcelas.js
 import { apiRequest } from './api.js';
 
 const lista = document.getElementById('listaParcelas');
@@ -67,20 +66,14 @@ async function pagar(id) {
 }
 
 async function gerar(id) {
-  const data = await apiRequest(`vendas/${id}/recibo`);
-  const html = `
-    <html><body>
-      <h1>Recibo</h1>
-      <p>${data.cliente} (CPF: ${data.cpf}) — R$ ${data.valor_parcela.toFixed(2)}</p>
-      <p>Parcela ${data.num_parcela} / ${data.parcelas}</p>
-      <p>Produto: ${data.produto}</p>
-      <p>Venda: ${new Date(data.data_venda).toLocaleDateString()}</p>
-      <p>Entrada: R$ ${data.valor_entrada.toFixed(2)}</p>
-      <p>Total: R$ ${data.valor_total.toFixed(2)}</p>
-      <p>Obs: ${data.observacoes}</p>
-      <p>${data.local}, ${new Date(data.data_emissao).toLocaleString()}</p>
-    </body></html>`;
-  const w = window.open(); w.document.write(html); w.document.close();
+  const res = await fetch(`/api/vendas/${id}/recibo-pdf`, {
+    headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
+  });
+  const blob = await res.blob();
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `recibo_${id}.pdf`;
+  link.click();
 }
 
 search.addEventListener('input', carregar);

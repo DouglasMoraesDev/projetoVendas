@@ -1,7 +1,11 @@
 // public/js/api.js
-// Função genérica para chamadas à API (usa sempre /api como prefixo)
+
+const baseURL = location.hostname === 'localhost'
+  ? 'http://localhost:3000/api'
+  : 'https://projetovendas-production-1a00.up.railway.app/api';
+
 export async function apiRequest(endpoint, method = 'GET', data = null, isFormData = false) {
-  const url = `${window.location.origin}/api/${endpoint}`;
+  const url = `${baseURL}/${endpoint}`;
   const opts = {
     method,
     headers: isFormData ? {} : { 'Content-Type': 'application/json' },

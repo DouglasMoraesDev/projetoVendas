@@ -3,31 +3,37 @@ import express from 'express';
 import {
   listarVendas,
   adicionarVenda,
+  obterVenda,
   gerarRecibo,
+  gerarReciboPdf,
   atualizarVenda,
   deletarVenda
-} from '../controllers/vendasController.js'; // garante que atualizarVenda existe aqui
+} from '../controllers/vendasController.js';
 import { authenticate } from '../middlewares/authMiddleware.js';
 
 export default function(db) {
   const router = express.Router();
-
-  // Aplica autenticação a todas as rotas
   router.use(authenticate);
 
-  // Listar todas as vendas
+  // 1) Lista todas as vendas
   router.get('/', (req, res) => listarVendas(db, req, res));
 
-  // Criar nova venda
-  router.post('/', (req, res) => adicionarVenda(db, req, res));
+  // 2) Gera PDF de recibo
+  router.get('/:id/recibo-pdf', (req, res) => gerarReciboPdf(db, req, res));
 
-  // Gerar recibo de uma venda específica
+  // 3) Retorna recibo em JSON
   router.get('/:id/recibo', (req, res) => gerarRecibo(db, req, res));
 
-  // Atualizar dados de uma venda existente
+  // 4) Busca venda por id
+  router.get('/:id', (req, res) => obterVenda(db, req, res));
+
+  // 5) Cria nova venda
+  router.post('/', (req, res) => adicionarVenda(db, req, res));
+
+  // 6) Atualiza venda existente
   router.put('/:id', (req, res) => atualizarVenda(db, req, res));
 
-  // Deletar uma venda
+  // 7) Deleta uma venda
   router.delete('/:id', (req, res) => deletarVenda(db, req, res));
 
   return router;

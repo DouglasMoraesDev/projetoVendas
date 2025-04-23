@@ -1,4 +1,3 @@
-// public/js/produtos.js
 import { apiRequest } from './api.js';
 
 const form = document.getElementById('formProduto');
@@ -6,23 +5,41 @@ const lista = document.getElementById('listaProdutos');
 const btn = document.getElementById('btnSalvarProduto');
 let editId = null;
 
-function formatBRL(v) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
-    .format(parseFloat(v) || 0);
+// Converte string local (ex: "20.000,00") em número (20000)
+function parseBRL(v) {
+  // remove tudo que não seja dígito, ponto ou vírgula
+  let s = String(v).replace(/[^\d.,]/g, '');
+  // tira pontos de milhar e troca vírgula decimal por ponto
+  s = s.replace(/\./g, '').replace(/,/g, '.');
+  return parseFloat(s) || 0;
 }
 
-// Monitora formatação de preço
+// Formata número em BRL (ex: 20000 → "R$ 20.000,00")
+function formatBRL(n) {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  }).format(n);
+}
+
+// Ao perder o foco, normaliza+formata
 form.precoProd.addEventListener('blur', e => {
-  e.target.value = formatBRL(e.target.value);
-});
-form.precoProd.addEventListener('focus', e => {
-  e.target.value = e.target.value.replace(/[^0-9.,]/g, '').replace(',', '.');
+  const num = parseBRL(e.target.value);
+  e.target.value = formatBRL(num);
 });
 
+// Ao focar, desserializa para edição
+form.precoProd.addEventListener('focus', e => {
+  const num = parseBRL(e.target.value);
+  e.target.value = num > 0 ? num.toString() : '';
+});
+
+// Busca lista de produtos
 async function fetchProdutos() {
   return await apiRequest('produtos');
 }
 
+// Renderiza lista
 async function render() {
   const produtos = await fetchProdutos();
   lista.innerHTML = produtos.map(p => {
@@ -38,11 +55,17 @@ async function render() {
   }).join('') || '<li>Nenhum produto encontrado.</li>';
 }
 
+// Submete form
 form.addEventListener('submit', async e => {
   e.preventDefault();
+
   const data = new FormData();
   data.append('nome', form.nomeProd.value.trim());
-  data.append('preco', form.precoProd.value.replace(/[^0-9.,]/g, '').replace(',', '.'));
+
+  // Garante valor numérico correto
+  const precoNum = parseBRL(form.precoProd.value);
+  data.append('preco', precoNum);
+
   data.append('qtd', form.qtdProd.value);
   if (form.fotoProd.files[0]) data.append('image', form.fotoProd.files[0]);
 
@@ -53,20 +76,23 @@ form.addEventListener('submit', async e => {
   } else {
     await apiRequest('produtos', 'POST', data, true);
   }
+
   form.reset();
   render();
 });
 
+// Editar produto
 window.editar = async id => {
   const produtos = await fetchProdutos();
   const p = produtos.find(x => x.id === id);
-  form.nomeProd.value = p.nome;
+  form.nomeProd.value  = p.nome;
   form.precoProd.value = formatBRL(p.preco);
-  form.qtdProd.value = p.qtd;
+  form.qtdProd.value   = p.qtd;
   editId = id;
   btn.textContent = 'Atualizar';
 };
 
+// Deletar produto
 window.deletar = async id => {
   if (confirm('Confirma exclusão?')) {
     await apiRequest(`produtos/${id}`, 'DELETE');
