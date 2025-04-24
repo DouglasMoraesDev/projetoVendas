@@ -1,5 +1,5 @@
 [build]
-buildCommand = "npm ci"
+buildCommand = ""      # vazio porque o Dockerfile já faz o npm ci
 
 [deploy]
 preDeployCommand = "npm run migrate && npm run seed"
