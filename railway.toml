@@ -1,8 +1,7 @@
 # railway.toml
 [build]
-builder = "nixpacks"
 buildCommand = "npm install"
 
 [deploy]
-startCommand = "node server.js"
+startCommand = "npm start"
 restartPolicyType = "ON_FAILURE"
