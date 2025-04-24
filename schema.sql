@@ -1,0 +1,56 @@
+-- Tabela de usuários\CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela de clientes
+CREATE TABLE IF NOT EXISTS clientes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(100) NOT NULL,
+  cpf VARCHAR(20) NOT NULL,
+  endereco VARCHAR(255) NOT NULL,
+  contato VARCHAR(50) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Tabela de produtos
+CREATE TABLE IF NOT EXISTS produtos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(100) NOT NULL,
+  preco DECIMAL(10,2) NOT NULL,
+  qtd INT NOT NULL,
+  foto VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Tabela de vendas
+CREATE TABLE IF NOT EXISTS vendas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  cliente_id INT NOT NULL,
+  produto_id INT NOT NULL,
+  qtd INT NOT NULL,
+  cliente_name VARCHAR(255) NOT NULL,
+  produto_name VARCHAR(255) NOT NULL,
+  data DATETIME NOT NULL,
+  entrada DECIMAL(10,2) NOT NULL,
+  valor_total DECIMAL(10,2) NOT NULL,
+  parcelas INT NOT NULL,
+  due_day INT NOT NULL,
+  paid_installments INT NOT NULL,
+  obs VARCHAR(255),
+  FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+  FOREIGN KEY (produto_id) REFERENCES produtos(id)
+);
+
+-- Tabela de comprovantes
+CREATE TABLE IF NOT EXISTS comprovantes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  venda_id INT NOT NULL,
+  imagem LONGTEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (venda_id) REFERENCES vendas(id)
+);

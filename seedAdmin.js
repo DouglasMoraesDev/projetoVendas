@@ -1,10 +1,8 @@
-// seedAdmin.js (na raiz do projeto)
-
-require('dotenv').config();
-const createDbConnection = require('./src/config/database');
-const { hashPassword } = require('./src/utils/helpers');
-const { users } = require('./src/models/users');
-const { eq } = require('drizzle-orm');
+import 'dotenv/config';
+import createDbConnection from './src/config/database.js';
+import { hashPassword } from './src/utils/helpers.js';
+import { users } from './src/models/users.js';
+import { eq } from 'drizzle-orm';
 
 async function seedAdmin() {
   try {
@@ -20,7 +18,7 @@ async function seedAdmin() {
 
     if (existing) {
       console.log('Usuário admin já existe com id', existing.id);
-      process.exit(0);
+      return;
     }
 
     // Insere o admin
@@ -28,15 +26,13 @@ async function seedAdmin() {
       .insert(users)
       .values({ username, password: passwordHash });
 
-    // Busca o id do admin recém‑criado
+    // Busca o id do admin recém-criado
     const [admin] = await db
       .select({ id: users.id })
       .from(users)
       .where(eq(users.username, username));
 
     console.log(`Usuário admin criado com id ${admin.id}`);
-    process.exit(0);
-
   } catch (err) {
     console.error('Erro ao criar usuário admin:', err);
     process.exit(1);

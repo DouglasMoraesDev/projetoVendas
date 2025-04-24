@@ -1,15 +1,17 @@
 import { defineConfig } from 'drizzle-kit';
-import * as dotenv from 'dotenv';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
-const connectionString = `mysql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
+// No Railway, use DATABASE_URL ou, se preferir, desmembrar em DB_USER, DB_PASS etc.
+const url = process.env.DATABASE_URL ??
+  `mysql://${process.env.DB_USER}:${process.env.DB_PASS}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
 
 export default defineConfig({
-  schema: './src/database/schema',
-  out: './drizzle',
+  schema: 'src/models',      // diretório dos seus modelos Drizzle
+  out: 'drizzle',           // onde serão geradas as migrations
   driver: 'mysql2',
   dbCredentials: {
-    connectionString,
+    url,
   },
 });
