@@ -1,10 +1,7 @@
-# railway.toml
 [build]
 buildCommand = "npm ci"
 
 [deploy]
-# roda antes de iniciar o app
-preDeployCommand = ["npm run migrate", "npm run seed"]
-# agora sim sobe o servidor
-startCommand = "npm start"
+preDeployCommand = "npm run migrate && npm run seed"
+startCommand    = "npm start"
 restartPolicyType = "ON_FAILURE"
