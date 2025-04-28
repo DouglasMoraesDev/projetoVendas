@@ -1,7 +1,0 @@
-[build]
-buildCommand = ""      # vazio, pois dockerfile já faz npm ci
-
-[deploy]
-preDeployCommand = "npm run migrate && npm run seed"
-startCommand    = "npm start"
-restartPolicyType = "ON_FAILURE"
