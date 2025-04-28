@@ -1,4 +1,5 @@
-// Ponto de entrada do servidor Express
+// src/app.js
+
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -26,8 +27,14 @@ async function start() {
     app.use(express.json({ limit: '10mb' }));  // permite Base64 grande
     app.use(express.urlencoded({ extended: true }));
 
+    // Redireciona GET "/" para a tela de login
+    app.get('/', (req, res) =>
+      res.sendFile(path.join(__dirname, '../public/login.html'))
+    );
+
     // Servir arquivos estáticos
     app.use(express.static(path.join(__dirname, '../public')));
+    // Rota estática para uploads
     app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
     // Rotas da API
