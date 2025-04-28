@@ -26,7 +26,7 @@ async function start() {
     const app = express();
 
     // === CORS ===
-    // Whitelist: só as URLs que vão consumir sua API
+    // Whitelist: front-end no Railway e localhost em dev
     const allowedOrigins = [
       'https://projetovendas-production-b93b.up.railway.app',
       'http://localhost:3000'
@@ -34,16 +34,15 @@ async function start() {
 
     app.use(cors({
       origin(origin, callback) {
-        // Se não vier origin (ex: Postman), deixa passar
+        // Se não vier origin (ex: Postman), permite
         if (!origin || allowedOrigins.includes(origin)) {
           return callback(null, true);
         }
-        callback(new Error('Bloqueado por CORS'));
+        callback(new Error(`Bloqueado por CORS: ${origin}`));
       },
       methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
       credentials: true
     }));
-    // permite preflight para todas as rotas
     app.options('*', cors());
 
     // === body parsers ===

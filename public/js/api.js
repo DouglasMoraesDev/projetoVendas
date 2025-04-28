@@ -1,6 +1,6 @@
 // public/js/api.js
 
-// determina automaticamente a origem da API (sem CORS extra)
+// determina automaticamente a origem da API (mesmo host que serviu a página)
 const API_URL = window.location.origin + '/api';
 
 export async function apiRequest(endpoint, method = 'GET', data = null, isFormData = false) {
