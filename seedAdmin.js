@@ -1,25 +1,38 @@
-// seedAdmin.js (no root do projeto)
+// seedAdmin.js
+
 import 'dotenv/config';
-import { createDbConnection } from './src/config/database.js';
+import mysql from 'mysql2/promise';
+import bcrypt from 'bcrypt';
 
 async function seedAdmin() {
-  const db = await createDbConnection();
+  // Conexão direta com MySQL (mesmo config do createDbConnection)
+  const conn = await mysql.createConnection({
+    host:     process.env.DB_HOST,
+    port:     Number(process.env.DB_PORT),
+    user:     process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
+  });
 
-  // Exemplo: insere um usuário admin se não existir
-  const [exists] = await db.execute(
-    `SELECT 1 FROM usuarios WHERE email = ? LIMIT 1`,
+  // Verifica se já existe o admin
+  const [rows] = await conn.execute(
+    'SELECT 1 FROM usuarios WHERE email = ? LIMIT 1',
     ['admin@exemplo.com']
   );
-  if (!exists.length) {
-    await db.execute(
-      `INSERT INTO usuarios (nome, email, senha_hash, perfil) VALUES (?, ?, ?, ?)`,
-      ['Admin', 'admin@exemplo.com', /* bcrypt da senha */, 'admin']
+
+  if (rows.length === 0) {
+    const hash = await bcrypt.hash('suaSenhaAdmin', 10);
+    await conn.execute(
+      `INSERT INTO usuarios (nome, email, senha_hash, perfil)
+       VALUES (?, ?, ?, ?)`,
+      ['Admin', 'admin@exemplo.com', hash, 'admin']
     );
     console.log('Admin seed criado.');
   } else {
     console.log('Admin já existe.');
   }
 
+  await conn.end();
   process.exit(0);
 }
 

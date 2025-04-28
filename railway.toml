@@ -11,3 +11,4 @@ name = "projetoVendas"
 preDeployCommand = "npm run migrate && npm run seed"
 startCommand     = "npm start"
 
+
