@@ -6,8 +6,8 @@ name = "projetoVendas"
 [build]
 # se você usa Dockerfile, deixe vazio ou aponte pra ele
 
+
 [deploy]
-# antes de iniciar, executa push das migrations e depois cria o admin
 preDeployCommand = "npm run migrate && npm run seed"
-# comando que inicia sua aplicação
-startCommand    = "npm start"
+startCommand     = "npm start"
+

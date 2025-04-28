@@ -1,14 +1,15 @@
 // public/js/api.js
 
-const baseURL = location.hostname === 'localhost'
-  ? 'http://localhost:3000/api'
-  : 'https://projetovendas-production-1a00.up.railway.app/api';
+// determina automaticamente a origem da API (sem CORS extra)
+const API_URL = window.location.origin + '/api';
 
 export async function apiRequest(endpoint, method = 'GET', data = null, isFormData = false) {
-  const url = `${baseURL}/${endpoint}`;
+  const url = `${API_URL}/${endpoint}`;
   const opts = {
     method,
-    headers: isFormData ? {} : { 'Content-Type': 'application/json' },
+    headers: isFormData
+      ? {}
+      : { 'Content-Type': 'application/json' },
   };
 
   const token = localStorage.getItem('token');
@@ -18,7 +19,10 @@ export async function apiRequest(endpoint, method = 'GET', data = null, isFormDa
   const res = await fetch(url, opts);
   if (!res.ok) {
     let errMsg = `Erro ${res.status}`;
-    try { const err = await res.json(); errMsg = err.error || err.message; } catch {}
+    try {
+      const err = await res.json();
+      errMsg = err.error || err.message || errMsg;
+    } catch {}
     throw new Error(errMsg);
   }
   return res.json();
