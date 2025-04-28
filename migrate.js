@@ -12,10 +12,7 @@ async function migrate() {
     database: process.env.DB_NAME,
   });
 
-  // Lê o schema.sql completo
   const sql = readFileSync(new URL('./schema.sql', import.meta.url), 'utf8');
-
-  // Separa por “;” e executa cada bloco
   const stmts = sql
     .split(';')
     .map(s => s.trim())
@@ -27,10 +24,10 @@ async function migrate() {
   }
 
   await conn.end();
-  console.log('Migrações finalizadas.');
+  console.log('All migrations applied.');
 }
 
 migrate().catch(err => {
-  console.error('Erro na migração:', err);
+  console.error('Migration error:', err);
   process.exit(1);
 });

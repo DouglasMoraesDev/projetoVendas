@@ -1,11 +1,9 @@
 // seedAdmin.js
-
 import 'dotenv/config';
 import mysql from 'mysql2/promise';
 import bcrypt from 'bcrypt';
 
 async function seedAdmin() {
-  // Conexão direta com MySQL (mesmo config do createDbConnection)
   const conn = await mysql.createConnection({
     host:     process.env.DB_HOST,
     port:     Number(process.env.DB_PORT),
@@ -14,18 +12,17 @@ async function seedAdmin() {
     database: process.env.DB_NAME,
   });
 
-  // Verifica se já existe o admin
+  // Verifica existência na tabela correta: 'users'
   const [rows] = await conn.execute(
-    'SELECT 1 FROM usuarios WHERE email = ? LIMIT 1',
-    ['admin@exemplo.com']
+    'SELECT 1 FROM users WHERE username = ? LIMIT 1',
+    ['admin']
   );
 
   if (rows.length === 0) {
     const hash = await bcrypt.hash('suaSenhaAdmin', 10);
     await conn.execute(
-      `INSERT INTO usuarios (nome, email, senha_hash, perfil)
-       VALUES (?, ?, ?, ?)`,
-      ['Admin', 'admin@exemplo.com', hash, 'admin']
+      `INSERT INTO users (username, password) VALUES (?, ?)`,
+      ['admin', hash]
     );
     console.log('Admin seed criado.');
   } else {

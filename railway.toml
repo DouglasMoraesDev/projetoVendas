@@ -1,14 +1,11 @@
-# railway.toml
-
 [project]
 name = "projetoVendas"
 
 [build]
-# se você usa Dockerfile, deixe vazio ou aponte pra ele
-
+# (vazio ou seu Dockerfile, se houver)
 
 [deploy]
+# Antes do start, cria tabelas e popula o admin
 preDeployCommand = "npm run migrate && npm run seed"
 startCommand     = "npm start"
-
 
