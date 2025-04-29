@@ -1,9 +1,12 @@
 [project]
 name = "projetoVendas"
 
+
 [build]
-# (vazio ou seu Dockerfile, se houver)
+builder = "nixpacks"
+buildCommand = "npm install"
 
 [deploy]
+
 startCommand     = "npm start"
 
