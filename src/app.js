@@ -24,7 +24,7 @@ async function start() {
 
     // === CORS ===
     const allowedOrigins = [
-      'projetovendas-production-b93b.up.railway.app',
+      'projetovendas-production-dc3f.up.railway.app',
       'http://localhost:3000'
     ];
 
