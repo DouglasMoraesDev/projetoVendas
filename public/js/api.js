@@ -3,7 +3,7 @@
 // baseURL agora aponta ao novo front-end em produção
 const baseURL = location.hostname === 'localhost'
   ? 'http://localhost:3000/api'
-  : 'https://sistemavendas.up.railway.app/api';
+  : 'https://projetovendas-production-b93b.up.railway.app/api';
 
 export async function apiRequest(endpoint, method = 'GET', data = null, isFormData = false) {
   const url = `${baseURL}/${endpoint}`;
