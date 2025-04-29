@@ -1,6 +1,6 @@
 # railway.toml
 [build]
-buildCommand = "npm ci"
+buildCommand = "npm install"
 
 [deploy]
 preDeployCommand = "npm run migrate && npm run seed"
@@ -9,5 +9,7 @@ restartPolicyType = "ON_FAILURE"
 
 [variables]
 DATABASE_URL = "mysql://root:GyOtcMLKFPElAHNKPHTPnDIntXpCdHYk@turntable.proxy.rlwy.net:22181/railway"
-JWT_SECRET   = "<Voyageturbo13.>"
+JWT_SECRET   = "<sua_chave_secreta_aqui>"
 # PORT não é obrigatório; Railway injeta automaticamente
+
+
