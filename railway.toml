@@ -3,13 +3,13 @@
 buildCommand = "npm install"
 
 [deploy]
-preDeployCommand = "npm run migrate && npm run seed"
+
 startCommand     = "npm start"
 restartPolicyType = "ON_FAILURE"
 
 [variables]
 DATABASE_URL = "mysql://root:GyOtcMLKFPElAHNKPHTPnDIntXpCdHYk@turntable.proxy.rlwy.net:22181/railway"
-JWT_SECRET   = "<sua_chave_secreta_aqui>"
+JWT_SECRET   = "<Voyageturbo13.>"
 # PORT não é obrigatório; Railway injeta automaticamente
 
 
