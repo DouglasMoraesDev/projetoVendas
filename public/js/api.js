@@ -1,15 +1,15 @@
 // public/js/api.js
 
-// determina automaticamente a origem da API (mesmo host que serviu a página)
-const API_URL = window.location.origin + '/api';
+// baseURL agora aponta ao novo front-end em produção
+const baseURL = location.hostname === 'localhost'
+  ? 'http://localhost:3000/api'
+  : 'https://sistemavendas.up.railway.app/api';
 
 export async function apiRequest(endpoint, method = 'GET', data = null, isFormData = false) {
-  const url = `${API_URL}/${endpoint}`;
+  const url = `${baseURL}/${endpoint}`;
   const opts = {
     method,
-    headers: isFormData
-      ? {}
-      : { 'Content-Type': 'application/json' },
+    headers: isFormData ? {} : { 'Content-Type': 'application/json' },
   };
 
   const token = localStorage.getItem('token');
@@ -21,7 +21,7 @@ export async function apiRequest(endpoint, method = 'GET', data = null, isFormDa
     let errMsg = `Erro ${res.status}`;
     try {
       const err = await res.json();
-      errMsg = err.error || err.message || errMsg;
+      errMsg = err.error || err.message;
     } catch {}
     throw new Error(errMsg);
   }

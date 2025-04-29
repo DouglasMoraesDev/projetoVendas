@@ -20,21 +20,18 @@ const __dirname = path.dirname(__filename);
 
 async function start() {
   try {
-    // abre conexão com o banco
     const db = await createDbConnection();
-
     const app = express();
 
     // === CORS ===
-    // Whitelist: front-end no Railway e localhost em dev
+    // Rotina de whitelist para o front-end em produção e localhost
     const allowedOrigins = [
-      'https://projetovendas-production-b93b.up.railway.app',
+      'https://sistemavendas.up.railway.app',  // NOVO domínio
       'http://localhost:3000'
     ];
 
     app.use(cors({
       origin(origin, callback) {
-        // Se não vier origin (ex: Postman), permite
         if (!origin || allowedOrigins.includes(origin)) {
           return callback(null, true);
         }
@@ -45,18 +42,18 @@ async function start() {
     }));
     app.options('*', cors());
 
-    // === body parsers ===
+    // body parsers
     app.use(express.json({ limit: '10mb' }));
     app.use(express.urlencoded({ extended: true }));
 
-    // === rotas web ===
+    // front-end estático
     app.get('/', (req, res) =>
       res.sendFile(path.join(__dirname, '../public/login.html'))
     );
     app.use(express.static(path.join(__dirname, '../public')));
     app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
-    // === rotas API ===
+    // API
     app.use('/api/auth', authRoutes(db));
     app.use('/api/clientes', clientesRoutes(db));
     app.use('/api/produtos', produtosRoutes(db));
