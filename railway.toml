@@ -5,7 +5,5 @@ name = "projetoVendas"
 # (vazio ou seu Dockerfile, se houver)
 
 [deploy]
-# Antes do start, cria tabelas e popula o admin
-preDeployCommand = "npm run migrate && npm run seed"
 startCommand     = "npm start"
 
