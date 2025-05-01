@@ -19,7 +19,7 @@ async function seedAdmin() {
   );
 
   if (rows.length === 0) {
-    const hash = await bcrypt.hash('suaSenhaAdmin', 10);
+    const hash = await bcrypt.hash('admin', 10);
     await conn.execute(
       `INSERT INTO users (username, password) VALUES (?, ?)`,
       ['admin', hash]

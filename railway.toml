@@ -1,15 +1,11 @@
-# railway.toml
 [build]
 buildCommand = "npm install"
 
 [deploy]
-
-startCommand     = "npm start"
+# Executa o seed e depois inicializa o servidor
+startCommand     = "node seedAdmin.js && npm start"
 restartPolicyType = "ON_FAILURE"
 
 [variables]
 DATABASE_URL = "mysql://root:GyOtcMLKFPElAHNKPHTPnDIntXpCdHYk@turntable.proxy.rlwy.net:22181/railway"
-JWT_SECRET   = "<Voyageturbo13.>"
-# PORT não é obrigatório; Railway injeta automaticamente
-
-
+JWT_SECRET   = "Voyageturbo13."
