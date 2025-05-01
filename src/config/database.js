@@ -15,8 +15,7 @@ async function initDb() {
     });
     return drizzle(conn);
   }
-
-  // fallback local
+  // fallback para dev local
   const conn = await mysql.createConnection({
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),
@@ -27,5 +26,5 @@ async function initDb() {
   return drizzle(conn);
 }
 
-// top-level await (Node.js >= 14+ com "type":"module")
+// top-level await só funciona se você tiver "type": "module" no package.json
 export const db = await initDb();
