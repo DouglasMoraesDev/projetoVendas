@@ -1,4 +1,3 @@
-// public/js/comprovantes.js
 import { apiRequest } from './api.js';
 
 async function render() {
@@ -36,9 +35,16 @@ async function render() {
       // 3.2) Lista todos os comprovantes dessa venda
       grouped[vendaId].forEach(c => {
         html += `
-          <div class="comprovante-item">
-            <a href="${c.url}" target="_blank">Ver comprovante</a>
-            <span>${new Date(c.created_at).toLocaleString()}</span>
+          <div class="comprovante-item" style="margin-bottom:1rem;">
+            <!-- miniatura inline -->
+            <img 
+              src="${c.url}" 
+              alt="Comprovante #${c.id}" 
+              style="max-width:200px; max-height:200px; object-fit:contain; border:1px solid #ccc; border-radius:4px;"
+            />
+            <div>
+              <span><strong>Enviado em:</strong> ${new Date(c.created_at).toLocaleString('pt-BR')}</span>
+            </div>
           </div>
         `;
       });
