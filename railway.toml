@@ -3,7 +3,7 @@ buildCommand = "npm install"
 
 [deploy]
 # Executa o seed e depois inicializa o servidor
-startCommand     = "node seedAdmin.js && npm start"
+startCommand     = "npm start"
 restartPolicyType = "ON_FAILURE"
 
 [variables]
