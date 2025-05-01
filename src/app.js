@@ -28,7 +28,7 @@ async function start() {
     app.use(express.static(publicPath))
 
     // servir *tudo* que estiver em /uploads (produtos e comprovantes)
-    const uploadsPath = path.join(__dirname, '../uploads')
+    const uploadsPath = path.join(__dirname, 'uploads')
     app.use('/uploads', express.static(uploadsPath))
 
     // === CORS ===
