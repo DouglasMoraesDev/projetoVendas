@@ -1,3 +1,4 @@
+// public/js/produtos.js
 import { apiRequest } from './api.js';
 
 const form = document.getElementById('formProduto');
@@ -5,16 +6,14 @@ const lista = document.getElementById('listaProdutos');
 const btn = document.getElementById('btnSalvarProduto');
 let editId = null;
 
-// Converte string local (ex: "20.000,00") em número (20000)
+// Converte string BRL ("R$ 20.000,00") em número (20000)
 function parseBRL(v) {
-  // remove tudo que não seja dígito, ponto ou vírgula
   let s = String(v).replace(/[^\d.,]/g, '');
-  // tira pontos de milhar e troca vírgula decimal por ponto
   s = s.replace(/\./g, '').replace(/,/g, '.');
   return parseFloat(s) || 0;
 }
 
-// Formata número em BRL (ex: 20000 → "R$ 20.000,00")
+// Formata número em BRL (20000 → "R$ 20.000,00")
 function formatBRL(n) {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -22,13 +21,11 @@ function formatBRL(n) {
   }).format(n);
 }
 
-// Ao perder o foco, normaliza+formata
+// Eventos de formatação no campo preço
 form.precoProd.addEventListener('blur', e => {
   const num = parseBRL(e.target.value);
   e.target.value = formatBRL(num);
 });
-
-// Ao focar, desserializa para edição
 form.precoProd.addEventListener('focus', e => {
   const num = parseBRL(e.target.value);
   e.target.value = num > 0 ? num.toString() : '';
@@ -39,14 +36,16 @@ async function fetchProdutos() {
   return await apiRequest('produtos');
 }
 
-// Renderiza lista
+// Renderiza a lista na tela
 async function render() {
   const produtos = await fetchProdutos();
   lista.innerHTML = produtos.map(p => {
-    const img = p.foto ? `/uploads/${p.foto}` : 'https://via.placeholder.com/50';
+    const imgUrl = p.foto
+      ? `/uploads/produtos/${p.foto}`
+      : 'https://via.placeholder.com/50';
     return `
       <li>
-        <img src="${img}" width="50" height="50" />
+        <img src="${imgUrl}" width="50" height="50" />
         ${p.nome} — ${formatBRL(p.preco)} — Qtd: ${p.qtd}
         <button onclick="editar(${p.id})">✏️</button>
         <button onclick="deletar(${p.id})">❌</button>
@@ -55,33 +54,44 @@ async function render() {
   }).join('') || '<li>Nenhum produto encontrado.</li>';
 }
 
-// Submete form
+// Envio do formulário (criar ou editar)
 form.addEventListener('submit', async e => {
   e.preventDefault();
 
-  const data = new FormData();
-  data.append('nome', form.nomeProd.value.trim());
+  // Monta o objeto JSON com dados textuais
+  const body = {
+    nome: form.nomeProd.value.trim(),
+    preco: parseBRL(form.precoProd.value),
+    qtd: form.qtdProd.value
+  };
 
-  // Garante valor numérico correto
-  const precoNum = parseBRL(form.precoProd.value);
-  data.append('preco', precoNum);
+  // Se houver arquivo de foto, faz upload primeiro
+  if (form.fotoProd.files[0]) {
+    const fm = new FormData();
+    fm.append('file', form.fotoProd.files[0]);
 
-  data.append('qtd', form.qtdProd.value);
-  if (form.fotoProd.files[0]) data.append('image', form.fotoProd.files[0]);
+    const uploadRes = await fetch(`${location.origin}/api/upload?type=produto`, {
+      method: 'POST',
+      body: fm
+    });
+    const { filename } = await uploadRes.json();
+    body.foto = filename;
+  }
 
+  // Chama a API de produtos com JSON
   if (editId) {
-    await apiRequest(`produtos/${editId}`, 'PUT', data, true);
+    await apiRequest(`produtos/${editId}`, 'PUT', body);
     editId = null;
     btn.textContent = 'Cadastrar';
   } else {
-    await apiRequest('produtos', 'POST', data, true);
+    await apiRequest('produtos', 'POST', body);
   }
 
   form.reset();
   render();
 });
 
-// Editar produto
+// Função global para iniciar edição
 window.editar = async id => {
   const produtos = await fetchProdutos();
   const p = produtos.find(x => x.id === id);
@@ -92,7 +102,7 @@ window.editar = async id => {
   btn.textContent = 'Atualizar';
 };
 
-// Deletar produto
+// Função global para deletar
 window.deletar = async id => {
   if (confirm('Confirma exclusão?')) {
     await apiRequest(`produtos/${id}`, 'DELETE');
@@ -100,4 +110,5 @@ window.deletar = async id => {
   }
 };
 
+// Carrega a lista ao abrir a página
 document.addEventListener('DOMContentLoaded', render);
