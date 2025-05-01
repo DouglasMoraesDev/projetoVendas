@@ -12,6 +12,9 @@ router.post('/', upload.single('file'), (req, res) => {
     })
   }
 
+    // DEBUG: mostra o path absoluto onde o arquivo foi salvo
+    console.log('>> Upload salvo em:', req.file.path);
+
   // ← LOG para debug:
   console.log('>> Upload gravado em:', req.file.path)
 
