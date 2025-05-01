@@ -13,6 +13,7 @@ import comprovantesRoutes from './routes/comprovantesRoutes.js'
 import uploadRoutes from './routes/uploadRoutes.js'
 import dashboardRoutes from './routes/dashboardRoutes.js'
 import configRouter from "./routes/configRoutes.js";
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
@@ -59,13 +60,14 @@ async function start() {
 
     // === Rotas API –– note que TODAS recebem `db` aqui dentro do start(), onde `db` está definido
     app.use('/api/auth', authRoutes(db))
+    app.use("/api/config", configRouter);
     app.use('/api/clientes', clientesRoutes(db))
     app.use('/api/produtos', produtosRoutes(db))
     app.use('/api/vendas', vendasRoutes(db))
     app.use('/api/comprovantes', comprovantesRoutes(db))
     app.use('/api/upload', uploadRoutes)
     app.use('/api/dashboard', dashboardRoutes(db))
-    app.use("/api/config", configRouter);
+    
 
     // === Tratamento de erros global ===
     app.use((err, req, res, next) => {

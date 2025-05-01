@@ -1,10 +1,14 @@
+// src/routes/configRoutes.js
 import { Router } from "express";
 import { ConfigController } from "../controllers/ConfigController.js";
-import { authMiddleware } from "../middlewares/auth.js";
+// Se você fez `export function authMiddleware` no auth.js:
+//    ↑ nome exato entre chaves
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+// Se você fez `export default authMiddleware` no auth.js, use:
+// import authMiddleware from "../middlewares/auth.js";
 
 const router = Router();
 
-// só usuários autenticados podem fazer backup ou auditoria
 router.get("/backup", authMiddleware, ConfigController.backup);
 router.get("/auditoria", authMiddleware, ConfigController.auditoria);
 
