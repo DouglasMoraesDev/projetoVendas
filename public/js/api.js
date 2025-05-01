@@ -1,17 +1,13 @@
 // public/js/api.js
-
-// baseURL agora aponta ao novo front-end em produção
 const baseURL = location.hostname === 'localhost'
   ? 'http://localhost:3000/api'
   : 'https://projetovendas-production-dc3f.up.railway.app/api';
 
 export async function apiRequest(endpoint, method = 'GET', data = null, isFormData = false) {
   const url = `${baseURL}/${endpoint}`;
-  const opts = {
-    method,
-    headers: isFormData ? {} : { 'Content-Type': 'application/json' },
-  };
+  const opts = { method, headers: {} };
 
+  if (!isFormData) opts.headers['Content-Type'] = 'application/json';
   const token = localStorage.getItem('token');
   if (token) opts.headers['Authorization'] = `Bearer ${token}`;
   if (data) opts.body = isFormData ? data : JSON.stringify(data);
@@ -19,9 +15,9 @@ export async function apiRequest(endpoint, method = 'GET', data = null, isFormDa
   const res = await fetch(url, opts);
   if (!res.ok) {
     let errMsg = `Erro ${res.status}`;
-    try {
-      const err = await res.json();
-      errMsg = err.error || err.message;
+    try { 
+      const err = await res.json(); 
+      errMsg = err.error || err.message; 
     } catch {}
     throw new Error(errMsg);
   }

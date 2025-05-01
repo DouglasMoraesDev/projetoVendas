@@ -22,12 +22,17 @@ async function start() {
     const db = await createDbConnection();
     const app = express();
 
+    // === Servir estáticos ANTES de outros middlewares ===
+    const publicPath = path.join(__dirname, '../public');
+    console.log('Servindo public em:', publicPath);
+    app.use(express.static(publicPath));
+    app.use('/uploads', express.static(path.join(publicPath, 'uploads')));
+
     // === CORS ===
     const allowedOrigins = [
-      'projetovendas-production-dc3f.up.railway.app',
-      'http://localhost:3000'
+      'http://localhost:3000',
+      'https://projetovendas-production-dc3f.up.railway.app'
     ];
-
     app.use(cors({
       origin(origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
@@ -40,18 +45,16 @@ async function start() {
     }));
     app.options('*', cors());
 
-    // === body parsers ===
+    // === Body parsers ===
     app.use(express.json({ limit: '10mb' }));
     app.use(express.urlencoded({ extended: true }));
 
-    // === rotas web ===
+    // === Rotas Web ===
     app.get('/', (req, res) =>
-      res.sendFile(path.join(__dirname, '../public/login.html'))
+      res.sendFile(path.join(publicPath, 'login.html'))
     );
-    app.use(express.static(path.join(__dirname, '../public')));
-    app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
-    // === rotas API ===
+    // === Rotas API ===
     app.use('/api/auth', authRoutes(db));
     app.use('/api/clientes', clientesRoutes(db));
     app.use('/api/produtos', produtosRoutes(db));
@@ -60,10 +63,16 @@ async function start() {
     app.use('/api/upload', uploadRoutes);
     app.use('/api/dashboard', dashboardRoutes(db));
 
+    // === Tratamento de erros global ===
+    app.use((err, req, res, next) => {
+      console.error('GLOBAL ERROR:', err.stack);
+      res.status(500).json({ error: 'Erro interno do servidor' });
+    });
+
     const port = process.env.PORT || 3000;
     app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));
   } catch (err) {
-    console.error('Erro ao iniciar servidor:', err);
+    console.error('Erro ao iniciar servidor:', err.stack);
     process.exit(1);
   }
 }
