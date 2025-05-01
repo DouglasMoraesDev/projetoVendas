@@ -3,15 +3,18 @@ import { upload } from '../middlewares/upload.js'
 
 const router = express.Router()
 
-// POST /api/upload?type=produto ou /api/upload?type=comprovante
+// POST /api/upload?type=produto ou ?type=comprovante
 router.post('/', upload.single('file'), (req, res) => {
-  console.log('→ Uploaded file:', req.file.path)  // caminho absoluto onde o arquivo foi salvo
   if (!req.file) {
     return res.status(400).json({
       success: false,
       error: 'Nenhum arquivo enviado'
     })
   }
+
+  // ← LOG para debug:
+  console.log('>> Upload gravado em:', req.file.path)
+
   const type = req.query.type === 'produto' ? 'produtos' : 'comprovantes'
   res.json({
     success: true,
