@@ -12,7 +12,7 @@ import vendasRoutes from './routes/vendasRoutes.js'
 import comprovantesRoutes from './routes/comprovantesRoutes.js'
 import uploadRoutes from './routes/uploadRoutes.js'
 import dashboardRoutes from './routes/dashboardRoutes.js'
-
+import configRouter from "./routes/configRoutes.js";
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
@@ -65,6 +65,7 @@ async function start() {
     app.use('/api/comprovantes', comprovantesRoutes(db))
     app.use('/api/upload', uploadRoutes)
     app.use('/api/dashboard', dashboardRoutes(db))
+    app.use("/api/config", configRouter);
 
     // === Tratamento de erros global ===
     app.use((err, req, res, next) => {
