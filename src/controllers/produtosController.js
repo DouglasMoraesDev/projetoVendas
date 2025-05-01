@@ -1,13 +1,22 @@
-// CRUD para produtos, incluindo upload e remoção de imagens
+// src/controllers/produtosController.js
 import { produtos } from '../models/produtos.js';
 import { eq } from 'drizzle-orm';
 import fs from 'fs';
 import path from 'path';
 
+const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads', 'produtos');
+
 export async function listarProdutos(db, req, res) {
   try {
     const list = await db.select().from(produtos);
-    res.json(list);
+    // inclui a URL completa de cada foto
+    const formatted = list.map(p => ({
+      ...p,
+      fotoUrl: p.foto
+        ? `/uploads/produtos/${p.foto}`
+        : null
+    }));
+    res.json(formatted);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erro ao listar produtos' });
@@ -40,12 +49,25 @@ export async function atualizarProduto(db, req, res) {
       preco: parseFloat(preco),
       qtd: parseInt(qtd, 10)
     };
+
     if (req.file) {
-      const [old] = await db.select().from(produtos).where(eq(produtos.id, Number(id)));
-      if (old?.foto) fs.unlink(path.join('public/uploads', old.foto), () => {});
+      // apaga a foto antiga, se existir
+      const [old] = await db
+        .select()
+        .from(produtos)
+        .where(eq(produtos.id, Number(id)));
+      if (old?.foto) {
+        const oldPath = path.join(UPLOADS_DIR, old.foto);
+        fs.unlink(oldPath, err => err && console.warn('erro ao apagar foto antiga:', err));
+      }
       updateData.foto = req.file.filename;
     }
-    await db.update(produtos).set(updateData).where(eq(produtos.id, Number(id)));
+
+    await db
+      .update(produtos)
+      .set(updateData)
+      .where(eq(produtos.id, Number(id)));
+
     res.json({ message: 'Produto atualizado!' });
   } catch (err) {
     console.error(err);
@@ -56,9 +78,20 @@ export async function atualizarProduto(db, req, res) {
 export async function deletarProduto(db, req, res) {
   const { id } = req.params;
   try {
-    const [old] = await db.select().from(produtos).where(eq(produtos.id, Number(id)));
-    if (old?.foto) fs.unlink(path.join('public/uploads', old.foto), () => {});
-    await db.delete(produtos).where(eq(produtos.id, Number(id)));
+    const [old] = await db
+      .select()
+      .from(produtos)
+      .where(eq(produtos.id, Number(id)));
+
+    if (old?.foto) {
+      const oldPath = path.join(UPLOADS_DIR, old.foto);
+      fs.unlink(oldPath, err => err && console.warn('erro ao apagar foto:', err));
+    }
+
+    await db
+      .delete(produtos)
+      .where(eq(produtos.id, Number(id)));
+
     res.json({ message: 'Produto deletado!' });
   } catch (err) {
     console.error(err);

@@ -2,19 +2,28 @@
 import { comprovantes } from '../models/comprovantes.js';
 import { vendas } from '../models/vendas.js';
 import { eq } from 'drizzle-orm';
+import fs from 'fs';
+import path from 'path';
+
+const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads', 'comprovantes');
 
 export async function adicionarComprovante(db, req, res) {
   const { venda_id } = req.body;
-  const imagem = req.file?.filename ?? req.body.imagem;
-  try {
-    // 1) Insere o registro de comprovante
-    const result = await db.insert(comprovantes).values({ venda_id, imagem });
+  // ou filename vindo de req.body.comprovante em caso de JSON
+  const imagem = req.file?.filename ?? req.body.comprovante;
 
-    // 2) Atualiza paid_installments na venda
+  try {
+    const result = await db.insert(comprovantes).values({
+      venda_id: Number(venda_id),
+      imagem
+    });
+
+    // atualiza installments
     const [sale] = await db
       .select()
       .from(vendas)
       .where(eq(vendas.id, Number(venda_id)));
+
     if (sale && sale.paid_installments < sale.parcelas) {
       await db
         .update(vendas)
@@ -30,7 +39,6 @@ export async function adicionarComprovante(db, req, res) {
 }
 
 export async function listarComprovantes(db, req, res) {
-  // agora lemos tanto req.params quanto req.query
   const vendaId = req.params.venda_id || req.query.venda_id;
   try {
     let q = db.select().from(comprovantes);
@@ -43,7 +51,8 @@ export async function listarComprovantes(db, req, res) {
       id: c.id,
       venda_id: c.venda_id,
       imagem: c.imagem,
-      url: `/uploads/${c.imagem}`,
+      // URL já incluindo subpasta
+      url: `/uploads/comprovantes/${c.imagem}`,
       created_at: c.created_at
     }));
 
