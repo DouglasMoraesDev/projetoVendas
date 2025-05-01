@@ -5,6 +5,7 @@ const router = express.Router()
 
 // POST /api/upload?type=produto ou /api/upload?type=comprovante
 router.post('/', upload.single('file'), (req, res) => {
+  console.log('→ Uploaded file:', req.file.path)  // caminho absoluto onde o arquivo foi salvo
   if (!req.file) {
     return res.status(400).json({
       success: false,
