@@ -1,5 +1,5 @@
 import { db } from "../config/database.js";
-import { vendas, parcelas, clientes, produtos, comprovantes } from "../models/index.js";
+import { vendas, parcelas, clientes, produtos, comprovantes } from "../models/";
 import { and, eq, gte, lt } from "drizzle-orm";
 import { format } from "date-fns";
 
