@@ -23,19 +23,18 @@ export async function listarProdutos(db, req, res) {
 }
 
 export async function adicionarProduto(db, req, res) {
-  const { nome, preco, qtd } = req.body;
-  const foto = req.file?.filename ?? null;
+  const { nome, preco, qtd, foto } = req.body   // <-- pega do JSON
   try {
     await db.insert(produtos).values({
       nome,
       preco: parseFloat(preco),
       qtd: parseInt(qtd, 10),
-      foto
-    });
-    res.status(201).json({ message: 'Produto adicionado!' });
+      foto: foto ?? null       // grava o filename ou null
+    })
+    res.status(201).json({ message: 'Produto adicionado!' })
   } catch (err) {
-    console.error('Erro ao adicionar produto:', err);
-    res.status(500).json({ error: 'Erro ao adicionar produto' });
+    console.error('Erro ao adicionar produto:', err)
+    res.status(500).json({ error: 'Erro ao adicionar produto' })
   }
 }
 

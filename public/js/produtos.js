@@ -41,8 +41,8 @@ async function render() {
   const produtos = await fetchProdutos();
   lista.innerHTML = produtos.map(p => {
     const imgUrl = p.foto
-      ? `/uploads/produtos/${p.foto}`
-      : 'https://via.placeholder.com/50';
+    ? `/uploads/produtos/${p.foto}`
+    : '/img/placeholder50.png'
     return `
       <li>
         <img src="${imgUrl}" width="50" height="50" />
