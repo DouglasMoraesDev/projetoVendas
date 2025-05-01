@@ -47,22 +47,36 @@ async function carregar() {
 }
 
 async function pagar(id) {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = 'image/*'
   input.onchange = async e => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = async () => {
-      await apiRequest('comprovantes', 'POST', {
-        venda_id: id,
-        imagem: reader.result
-      });
-      carregar();
-    };
-    reader.readAsDataURL(file);
-  };
-  input.click();
+    const file = e.target.files[0]
+    if (!file) return
+
+    // 1) envia multipart/form-data para /api/upload
+    const fm = new FormData()
+    fm.append('file', file)
+    const uploadRes = await fetch(`${location.origin}/api/upload?type=comprovante`, {
+      method: 'POST',
+      body: fm
+    })
+    if (!uploadRes.ok) {
+      console.error('Falha no upload do comprovante')
+      return
+    }
+    const { filename } = await uploadRes.json()
+
+    // 2) registra no banco
+    await apiRequest('comprovantes', 'POST', {
+      venda_id: id,
+      imagem: filename    // só o nome do arquivo
+    })
+
+    // 3) recarrega a lista
+    carregar()
+  }
+  input.click()
 }
 
 async function gerar(id) {
