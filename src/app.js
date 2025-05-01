@@ -56,8 +56,8 @@ async function start() {
     )
 
     // === Rotas API ===
-    app.use('/api/auth', authRoutes())
-    app.use('/api/clientes', clientesRoutes())
+    app.use('/api/auth', authRoutes(db))
+    app.use('/api/clientes', clientesRoutes(db))
     app.use('/api/produtos', produtosRoutes())
     app.use('/api/vendas', vendasRoutes())
     app.use('/api/comprovantes', comprovantesRoutes())
