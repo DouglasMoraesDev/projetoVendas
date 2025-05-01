@@ -9,7 +9,6 @@ const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads', 'produtos');
 export async function listarProdutos(db, req, res) {
   try {
     const list = await db.select().from(produtos);
-    // inclui a URL completa de cada foto
     const formatted = list.map(p => ({
       ...p,
       fotoUrl: p.foto
@@ -18,7 +17,7 @@ export async function listarProdutos(db, req, res) {
     }));
     res.json(formatted);
   } catch (err) {
-    console.error(err);
+    console.error('Erro ao listar produtos:', err);
     res.status(500).json({ error: 'Erro ao listar produtos' });
   }
 }
@@ -35,7 +34,7 @@ export async function adicionarProduto(db, req, res) {
     });
     res.status(201).json({ message: 'Produto adicionado!' });
   } catch (err) {
-    console.error(err);
+    console.error('Erro ao adicionar produto:', err);
     res.status(500).json({ error: 'Erro ao adicionar produto' });
   }
 }
@@ -51,7 +50,7 @@ export async function atualizarProduto(db, req, res) {
     };
 
     if (req.file) {
-      // apaga a foto antiga, se existir
+      // apaga foto antiga
       const [old] = await db
         .select()
         .from(produtos)
@@ -70,7 +69,7 @@ export async function atualizarProduto(db, req, res) {
 
     res.json({ message: 'Produto atualizado!' });
   } catch (err) {
-    console.error(err);
+    console.error('Erro ao atualizar produto:', err);
     res.status(500).json({ error: 'Erro ao atualizar produto' });
   }
 }
@@ -94,7 +93,7 @@ export async function deletarProduto(db, req, res) {
 
     res.json({ message: 'Produto deletado!' });
   } catch (err) {
-    console.error(err);
+    console.error('Erro ao deletar produto:', err);
     res.status(500).json({ error: 'Erro ao deletar produto' });
   }
 }
