@@ -70,6 +70,7 @@ export class ConfigController {
       const totalComprovantes = compsMes.length;
       const somaComprovantes  = compsMes.reduce((sum, c) => sum + Number(c.valor), 0);
 
+      
       return res.json({
         period: format(start, "yyyy-MM"),
         totalVendas,
