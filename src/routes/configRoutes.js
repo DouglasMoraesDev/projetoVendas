@@ -11,5 +11,9 @@ router.get("/backup", authenticate, ConfigController.backup);
 // Rota para relatório de auditoria mensal
 router.get("/auditoria", authenticate, ConfigController.auditoria);
 
+// Rota para relatório de auditoria em PDF
+router.get("/auditoria/pdf", authenticate, ConfigController.auditoriaPdf);
+
+
 // Default export do router
 export default router;

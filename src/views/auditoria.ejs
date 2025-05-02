@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Auditoria <%= period %></title>
+  <style>
+    /* aqui você pode replicar partes do seu css/style.css
+       ou colar um estilo customizado só pro PDF */
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    header { text-align: center; margin-bottom: 40px; }
+    h1 { margin: 0; }
+    .summary { display: flex; justify-content: space-around; margin-bottom: 30px; flex-wrap: wrap; }
+    .card { border: 1px solid #ccc; border-radius: 8px; padding: 16px; width: 22%; min-width: 120px; text-align: center; margin-bottom: 16px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; font-size: 12px; }
+    th { background-color: #f4f4f4; }
+    tr:nth-child(even){ background-color: #fafafa; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Relatório de Auditoria</h1>
+    <p>Período: <strong><%= period %></strong></p>
+  </header>
+
+  <section class="summary">
+    <div class="card">
+      <h2>Total Vendas</h2>
+      <p><%= totalVendas %></p>
+    </div>
+    <div class="card">
+      <h2>Soma Vendas</h2>
+      <p>R$ <%= somaVendas.toFixed(2) %></p>
+    </div>
+    <div class="card">
+      <h2>Total Comprov.</h2>
+      <p><%= totalComprovantes %></p>
+    </div>
+    <div class="card">
+      <h2>Soma Comprov.</h2>
+      <p>R$ <%= somaComprovantes.toFixed(2) %></p>
+    </div>
+  </section>
+
+  <section>
+    <h3>Detalhes das Vendas</h3>
+    <table>
+      <thead>
+      <tr>
+        <th>ID</th><th>Cliente</th><th>Produto</th><th>Data</th><th>Valor</th>
+      </tr>
+      </thead>
+      <tbody>
+      <% vendas.forEach(v => { %>
+        <tr>
+          <td><%= v.id %></td>
+          <td><%= v.cliente_name %></td>
+          <td><%= v.produto_name %></td>
+          <td><%= new Date(v.data).toLocaleDateString() %></td>
+          <td>R$ <%= Number(v.valor_total).toFixed(2) %></td>
+        </tr>
+      <% }) %>
+      </tbody>
+    </table>
+  </section>
+
+  <section style="margin-top:40px;">
+    <h3>Detalhes dos Comprovantes</h3>
+    <table>
+      <thead>
+      <tr>
+        <th>ID</th><th>Venda ID</th><th>Data</th>
+      </tr>
+      </thead>
+      <tbody>
+      <% comprovantes.forEach(c => { %>
+        <tr>
+          <td><%= c.id %></td>
+          <td><%= c.venda_id %></td>
+          <td><%= new Date(c.created_at).toLocaleDateString() %></td>
+        </tr>
+      <% }) %>
+      </tbody>
+    </table>
+  </section>
+</body>
+</html>
