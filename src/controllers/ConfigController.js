@@ -1,5 +1,6 @@
 // src/controllers/ConfigController.js
 import ejs from "ejs";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
 import puppeteer from "puppeteer";
@@ -11,6 +12,7 @@ import { produtos } from "../models/produtos.js";
 import { vendas } from "../models/vendas.js";
 import { comprovantes } from "../models/comprovantes.js";
 
+// Configurações para localizar corretamente o __dirname em ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
@@ -90,19 +92,26 @@ export class ConfigController {
   // GET /api/config/auditoria/pdf?year=YYYY&month=MM
   static async auditoriaPdf(req, res, next) {
     try {
-      // 1) Busca os dados
       const year  = parseInt(req.query.year, 10)  || new Date().getFullYear();
       const month = (parseInt(req.query.month, 10) - 1) || new Date().getMonth();
       const start = new Date(year, month, 1);
       const end   = new Date(year, month + 1, 1);
 
       const vendasMes = await db
-        .select().from(vendas)
-        .where(and(gte(vendas.data, start), lt(vendas.data, end)));
+        .select()
+        .from(vendas)
+        .where(and(
+          gte(vendas.data, start),
+          lt(vendas.data, end)
+        ));
 
       const compsMes = await db
-        .select().from(comprovantes)
-        .where(and(gte(comprovantes.created_at, start), lt(comprovantes.created_at, end)));
+        .select()
+        .from(comprovantes)
+        .where(and(
+          gte(comprovantes.created_at, start),
+          lt(comprovantes.created_at, end)
+        ));
 
       const totalVendas       = vendasMes.length;
       const somaVendas        = vendasMes.reduce((sum, v) => sum + Number(v.valor_total), 0);
@@ -110,10 +119,12 @@ export class ConfigController {
       const somaComprovantes  = compsMes.reduce((sum, c) => sum + Number(c.valor), 0);
       const period = format(start, "yyyy-MM");
 
-      // 2) Caminho absoluto pro EJS
       const templatePath = path.join(__dirname, "../views/auditoria.ejs");
+      if (!fs.existsSync(templatePath)) {
+        console.error("Template EJS não encontrado em:", templatePath);
+        throw new Error("Template de auditoria não localizado");
+      }
 
-      // 3) Renderiza o HTML
       const html = await ejs.renderFile(templatePath, {
         period,
         totalVendas,
@@ -124,28 +135,24 @@ export class ConfigController {
         comprovantes: compsMes,
       });
 
-      if (!html) throw new Error("HTML de template vazio");
+      if (typeof html !== "string" || html.trim().length === 0) {
+        console.error("HTML gerado vazio. Template:", templatePath);
+        throw new Error("Falha ao renderizar template de auditoria");
+      }
+      console.log("HTML de auditoria gerado com", html.length, "caracteres");
 
-      // 4) Gera o PDF
-      const browser = await puppeteer.launch({
-        args: ["--no-sandbox", "--disable-setuid-sandbox"]
-      });
+      const browser = await puppeteer.launch({ args: ["--no-sandbox","--disable-setuid-sandbox"] });
       const page = await browser.newPage();
       await page.setContent(html, { waitUntil: "networkidle0" });
-      const pdfBuffer = await page.pdf({
-        format: "A4",
-        printBackground: true,
-        margin: { top: "20px", bottom: "20px" }
-      });
+      const pdfBuffer = await page.pdf({ format: "A4", printBackground: true, margin: { top: "20px", bottom: "20px" } });
       await browser.close();
 
-      // 5) Envia o PDF
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `attachment; filename="auditoria_${period}.pdf"`);
       return res.send(pdfBuffer);
     } catch (err) {
       console.error("Erro ao gerar PDF de auditoria:", err);
-      return res.status(500).json({ error: "Falha ao gerar PDF de auditoria" });
+      return res.status(500).json({ error: err.message || "Falha ao gerar PDF de auditoria" });
     }
   }
 }
