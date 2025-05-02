@@ -1,13 +1,12 @@
 // src/controllers/ConfigController.js
 import { db } from "../config/database.js";
-import { and, eq, gte, lt } from "drizzle-orm";
+import { and, gte, lt } from "drizzle-orm";
 import { format } from "date-fns";
 
 import { clientes }     from "../models/clientes.js";
 import { produtos }     from "../models/produtos.js";
 import { vendas }       from "../models/vendas.js";
 import { comprovantes } from "../models/comprovantes.js";
-// import { users }      from "../models/users.js"; // opcional
 
 export class ConfigController {
   // GET /api/config/backup
@@ -20,7 +19,7 @@ export class ConfigController {
         db.select().from(comprovantes),
       ]);
 
-      const backup = {
+      const backupData = {
         timestamp: new Date().toISOString(),
         clientes: allClientes,
         produtos: allProdutos,
@@ -31,21 +30,23 @@ export class ConfigController {
       const filename = `backup_${format(new Date(), "yyyy-MM-dd_HH-mm-ss")}.json`;
       res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
       res.setHeader("Content-Type", "application/json");
-      res.send(JSON.stringify(backup, null, 2));
+      return res.send(JSON.stringify(backupData, null, 2));
     } catch (err) {
-      next(err);
+      console.error("Erro no backup:", err);
+      return next(err);
     }
   }
 
   // GET /api/config/auditoria?year=YYYY&month=MM
   static async auditoria(req, res, next) {
     try {
-      const year = parseInt(req.query.year, 10) || new Date().getFullYear();
+      // Parseia parâmetros
+      const year  = parseInt(req.query.year, 10)  || new Date().getFullYear();
       const month = (parseInt(req.query.month, 10) - 1) || new Date().getMonth();
       const start = new Date(year, month, 1);
       const end   = new Date(year, month + 1, 1);
 
-      // vendas no mês
+      // Filtra vendas do mês
       const vendasMes = await db
         .select()
         .from(vendas)
@@ -54,7 +55,7 @@ export class ConfigController {
           lt(vendas.createdAt, end)
         ));
 
-      // comprovantes no mês (pagamentos enviados)
+      // Filtra comprovantes do mês
       const compsMes = await db
         .select()
         .from(comprovantes)
@@ -63,22 +64,25 @@ export class ConfigController {
           lt(comprovantes.createdAt, end)
         ));
 
-      const totalVendas    = vendasMes.length;
-      const somaVendas     = vendasMes.reduce((sum, v) => sum + Number(v.total), 0);
-      const totalComps     = compsMes.length;
-      const somaCompsValor = compsMes.reduce((sum, c) => sum + Number(c.valor), 0);
+      // Gera resumos numéricos
+      const totalVendas       = vendasMes.length;
+      const somaVendas        = vendasMes.reduce((sum, v) => sum + Number(v.total), 0);
+      const totalComprovantes = compsMes.length;
+      const somaComprovantes  = compsMes.reduce((sum, c) => sum + Number(c.valor), 0);
 
-      res.json({
+      
+      return res.json({
         period: format(start, "yyyy-MM"),
         totalVendas,
         somaVendas,
-        totalComprovantes: totalComps,
-        somaComprovantes: somaCompsValor,
+        totalComprovantes,
+        somaComprovantes,
         vendas: vendasMes,
         comprovantes: compsMes,
       });
     } catch (err) {
-      next(err);
+      console.error("Erro na auditoria:", err);
+      return res.status(500).json({ error: "Falha ao gerar relatório de auditoria" });
     }
   }
 }
