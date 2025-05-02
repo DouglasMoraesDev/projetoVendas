@@ -46,31 +46,30 @@ export class ConfigController {
       const start = new Date(year, month, 1);
       const end   = new Date(year, month + 1, 1);
 
-      // Filtra vendas do mês
+      // Filtra vendas do mês usando coluna `data`
       const vendasMes = await db
         .select()
         .from(vendas)
         .where(and(
-          gte(vendas.createdAt, start),
-          lt(vendas.createdAt, end)
+          gte(vendas.data, start),
+          lt(vendas.data, end)
         ));
 
-      // Filtra comprovantes do mês
+      // Filtra comprovantes do mês usando coluna `created_at`
       const compsMes = await db
         .select()
         .from(comprovantes)
         .where(and(
-          gte(comprovantes.createdAt, start),
-          lt(comprovantes.createdAt, end)
+          gte(comprovantes.created_at, start),
+          lt(comprovantes.created_at, end)
         ));
 
       // Gera resumos numéricos
       const totalVendas       = vendasMes.length;
-      const somaVendas        = vendasMes.reduce((sum, v) => sum + Number(v.total), 0);
+      const somaVendas        = vendasMes.reduce((sum, v) => sum + Number(v.valor_total), 0);
       const totalComprovantes = compsMes.length;
       const somaComprovantes  = compsMes.reduce((sum, c) => sum + Number(c.valor), 0);
 
-      
       return res.json({
         period: format(start, "yyyy-MM"),
         totalVendas,
