@@ -1,12 +1,6 @@
 const token = localStorage.getItem("token");
 
-// Backup (continua igual)
-document.getElementById("btnBackup").addEventListener("click", () => {
-  fetch("/api/config/backup", {
-    headers: { Authorization: `Bearer ${token}` },
-  })
-  /* ... */
-});
+// … seu código de backup continua aqui …
 
 // Auditoria em PDF
 document
@@ -19,6 +13,7 @@ document
     }
     const [year, month] = monthInput.split("-");
 
+    // <-- nota: /auditoria/pdf em vez de /auditoria
     const res = await fetch(
       `/api/config/auditoria/pdf?year=${year}&month=${month}`,
       {
@@ -29,11 +24,12 @@ document
       alert("Erro ao baixar PDF da auditoria");
       return;
     }
+    // pega o binário corretamente
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    // nome do arquivo vem no header Content-Disposition
+    // filename virá no header Content-Disposition
     a.download = "";
     document.body.appendChild(a);
     a.click();
